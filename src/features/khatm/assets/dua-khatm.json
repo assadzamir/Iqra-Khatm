@@ -1,0 +1,30 @@
+{
+  "bismillah": {
+    "arabic": "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ",
+    "transliteration": "Bismillahir rahmanir raheem"
+  },
+  "dua": {
+    "AR": {
+      "arabic": "اللَّهُمَّ ارْحَمْنِي بِالْقُرْآنِ وَاجْعَلْهُ لِي إِمَامًا وَنُورًا وَهُدًى وَرَحْمَةً، اللَّهُمَّ ذَكِّرْنِي مِنْهُ مَا نُسِّيتُ وَعَلِّمْنِي مِنْهُ مَا جَهِلْتُ وَارْزُقْنِي تِلَاوَتَهُ آنَاءَ اللَّيْلِ وَأَطْرَافَ النَّهَارِ وَاجْعَلْهُ لِي حُجَّةً يَا رَبَّ الْعَالَمِينَ",
+      "transliteration": "Allahummar hamnee bil Quran waj'alhu lee imaman wa nooraw wa hudaw wa rahmah. Allahumma dhakkirnee minhu ma nuseetu wa 'allimnee minhu ma jahiltu warzuqnee tilawatahu ana'al layli wa atraafan nahar waj'alhu lee hujjatan ya Rabbal 'aalameen",
+      "translation": "O Allah, have mercy on me through the Quran and make it for me a guide, a light, a direction and a mercy. O Allah, remind me of what I have forgotten from it, teach me from it what I am ignorant of, grant me its recitation in the hours of night and the edges of day, and make it a proof for me, O Lord of all the worlds.",
+      "content_ready": true
+    },
+    "EN": {
+      "arabic": "اللَّهُمَّ ارْحَمْنِي بِالْقُرْآنِ وَاجْعَلْهُ لِي إِمَامًا وَنُورًا وَهُدًى وَرَحْمَةً، اللَّهُمَّ ذَكِّرْنِي مِنْهُ مَا نُسِّيتُ وَعَلِّمْنِي مِنْهُ مَا جَهِلْتُ وَارْزُقْنِي تِلَاوَتَهُ آنَاءَ اللَّيْلِ وَأَطْرَافَ النَّهَارِ وَاجْعَلْهُ لِي حُجَّةً يَا رَبَّ الْعَالَمِينَ",
+      "transliteration": "Allahummar hamnee bil Quran waj'alhu lee imaman wa nooraw wa hudaw wa rahmah. Allahumma dhakkirnee minhu ma nuseetu wa 'allimnee minhu ma jahiltu warzuqnee tilawatahu ana'al layli wa atraafan nahar waj'alhu lee hujjatan ya Rabbal 'aalameen",
+      "translation": "O Allah, have mercy on me through the Quran and make it for me a guide, a light, a direction and a mercy. O Allah, remind me of what I have forgotten from it, teach me from it what I am ignorant of, grant me its recitation in the hours of night and the edges of day, and make it a proof for me, O Lord of all the worlds.",
+      "content_ready": true
+    },
+    "UR": { "arabic": "", "transliteration": "", "translation": "", "content_ready": false },
+    "TR": { "arabic": "", "transliteration": "", "translation": "", "content_ready": false },
+    "FR": { "arabic": "", "transliteration": "", "translation": "", "content_ready": false },
+    "ID": { "arabic": "", "transliteration": "", "translation": "", "content_ready": false },
+    "MS": { "arabic": "", "transliteration": "", "translation": "", "content_ready": false }
+  },
+  "completion_message": {
+    "primary": "Alhamdulillah",
+    "secondary": "Taqabbal Allahu minna wa minkum"
+  },
+  "memorial_suffix": "May Allah grant {dedicated_to_name} the highest ranks of Jannah and shower mercy upon their soul"
+}

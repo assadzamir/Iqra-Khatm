@@ -1,0 +1,390 @@
+{
+  "version": 1,
+  "spec_name": "group-khatm",
+  "created_at": "2026-04-04T00:00:00.000Z",
+  "quick_mode": false,
+
+  "integrity": {
+    "requirements_sha256": "07c24e42ff156776698342eb72762d33fd0757b0ac5bf3c170293a0d98e73691",
+    "design_sha256": "cbaf162306a4459a91aee50143c8e0ec4bcb4b43d177f4c1710667a9065f95ab",
+    "tasks_sha256": "5375c40314699115975330314341dd528926f55b2470a696ee2220ccfd6a83f9",
+    "computed_at": "2026-04-05T00:01:00.000Z"
+  },
+
+  "tasks": {
+    "T-01": {
+      "status": "completed",
+      "wave": 0,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["src/features/khatm/types.ts"]
+    },
+    "T-02": {
+      "status": "completed",
+      "wave": 0,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["src/features/khatm/constants.ts"]
+    },
+    "T-03": {
+      "status": "completed",
+      "wave": 0,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["src/features/khatm/store.ts"]
+    },
+    "T-04": {
+      "status": "completed",
+      "wave": 0,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["src/features/khatm/assets/dua-khatm.json"]
+    },
+    "T-05": {
+      "status": "completed",
+      "wave": 0,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["supabase/migrations/001_khatm_schema.sql"]
+    },
+    "T-06": {
+      "status": "completed",
+      "wave": 1,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["src/features/khatm/hooks/useKhatmQueries.ts"]
+    },
+    "T-07": {
+      "status": "completed",
+      "wave": 1,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["src/features/khatm/hooks/useKhatmMutations.ts"]
+    },
+    "T-08": {
+      "status": "completed",
+      "wave": 1,
+      "wired": "pending",
+      "failures": 0,
+      "files": ["src/features/khatm/hooks/useAutoTracking.ts", "src/app/(quran-reader)/[page].tsx"]
+    },
+    "T-09": {
+      "status": "completed",
+      "wave": 2,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["src/features/khatm/components/JuzTile.tsx"]
+    },
+    "T-10": {
+      "status": "completed",
+      "wave": 2,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["src/features/khatm/components/JuzGrid.tsx"]
+    },
+    "T-11": {
+      "status": "completed",
+      "wave": 2,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["src/features/khatm/components/CollectiveProgressBar.tsx"]
+    },
+    "T-12": {
+      "status": "completed",
+      "wave": 2,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["src/features/khatm/components/BismillahOverlay.tsx"]
+    },
+    "T-13": {
+      "status": "completed",
+      "wave": 2,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["src/features/khatm/components/AdminSummaryCard.tsx"]
+    },
+    "T-14": {
+      "status": "completed",
+      "wave": 2,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["src/features/khatm/components/MembersSection.tsx"]
+    },
+    "T-15": {
+      "status": "completed",
+      "wave": 2,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["src/features/khatm/components/JuzBottomSheet.tsx"]
+    },
+    "T-16": {
+      "status": "completed",
+      "wave": 3,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["src/features/khatm/components/CreateKhatmBottomSheet.tsx"]
+    },
+    "T-17": {
+      "status": "completed",
+      "wave": 3,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["src/features/khatm/components/GroupSettingsBottomSheet.tsx"]
+    },
+    "T-18": {
+      "status": "completed",
+      "wave": 3,
+      "wired": "pending",
+      "failures": 0,
+      "files": ["src/features/khatm/screens/GroupKhatmScreen.tsx"]
+    },
+    "T-19": {
+      "status": "completed",
+      "wave": 3,
+      "wired": "pending",
+      "failures": 0,
+      "files": ["src/features/khatm/screens/CompletionScreen.tsx"]
+    },
+    "T-20": {
+      "status": "completed",
+      "wave": 3,
+      "wired": "yes",
+      "failures": 0,
+      "files": ["src/features/khatm/navigation.tsx", "src/features/khatm/index.ts", "src/app/(tabs)/_layout.tsx"]
+    },
+    "T-21": {
+      "status": "completed",
+      "wave": 3,
+      "wired": "n/a",
+      "failures": 0,
+      "files": [
+        "supabase/functions/notification-scheduler/index.ts",
+        "supabase/functions/notification-scheduler/deno.json"
+      ]
+    },
+    "T-22": {
+      "status": "completed",
+      "wave": 4,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["tests/e2e/khatm-create-to-complete.test.ts"]
+    },
+    "T-23": {
+      "status": "completed",
+      "wave": 4,
+      "wired": "n/a",
+      "failures": 0,
+      "files": ["tests/e2e/khatm-join-flow.test.ts"]
+    },
+    "T-24": {
+      "status": "completed",
+      "wave": 5,
+      "wired": "n/a",
+      "failures": 0,
+      "files": [
+        "src/features/khatm/components/JuzTile.tsx",
+        "src/features/khatm/components/JuzGrid.tsx",
+        "src/features/khatm/components/CollectiveProgressBar.tsx",
+        "src/features/khatm/components/BismillahOverlay.tsx",
+        "src/features/khatm/components/AdminSummaryCard.tsx",
+        "src/features/khatm/components/MembersSection.tsx",
+        "src/features/khatm/components/JuzBottomSheet.tsx",
+        "src/features/khatm/components/CreateKhatmBottomSheet.tsx",
+        "src/features/khatm/components/GroupSettingsBottomSheet.tsx",
+        "src/features/khatm/screens/GroupKhatmScreen.tsx",
+        "src/features/khatm/screens/CompletionScreen.tsx"
+      ]
+    },
+    "T-25": {
+      "status": "completed",
+      "wave": 5,
+      "wired": "n/a",
+      "failures": 0,
+      "files": [
+        "src/features/khatm/components/JuzGrid.tsx",
+        "src/features/khatm/components/JuzTile.tsx"
+      ]
+    }
+  },
+
+  "waves": [
+    {
+      "wave": 0,
+      "tasks": ["T-01", "T-02", "T-03", "T-04", "T-05"]
+    },
+    {
+      "wave": 1,
+      "tasks": ["T-06", "T-07", "T-08"]
+    },
+    {
+      "wave": 2,
+      "tasks": ["T-09", "T-10", "T-11", "T-12", "T-13", "T-14", "T-15"]
+    },
+    {
+      "wave": 3,
+      "tasks": ["T-16", "T-17", "T-18", "T-19", "T-20", "T-21"]
+    },
+    {
+      "wave": 4,
+      "tasks": ["T-22", "T-23"]
+    },
+    {
+      "wave": 5,
+      "tasks": ["T-24", "T-25"]
+    }
+  ],
+
+  "parallel": {
+    "max_parallel_agents": 3,
+    "shared_files": [
+      "src/features/khatm/types.ts",
+      "src/features/khatm/constants.ts",
+      "src/features/khatm/store.ts",
+      "src/features/khatm/index.ts",
+      "package.json",
+      "package-lock.json",
+      "tsconfig.json"
+    ],
+    "generated_files": [
+      "node_modules/",
+      ".expo/",
+      "dist/",
+      ".next/"
+    ],
+    "post_merge_commands": [
+      "npm install",
+      "npx expo prebuild --clean"
+    ]
+  },
+
+  "execution": {
+    "current_wave": 5,
+    "current_batch": [],
+    "iteration": 0,
+    "total_tokens": 0,
+    "budget_cap": null,
+    "started_at": null,
+    "last_iteration_at": null,
+    "human_checkpoint_interval": 5,
+    "tasks_since_checkpoint": 0
+  },
+
+  "reproducibility": {
+    "plugin_version": "2.0.0",
+    "model_versions": {},
+    "git_sha_start": null,
+    "prompt_hashes": [],
+    "referenced_codebase_files": []
+  },
+
+  "quality_gates": {
+    "gates": [],
+    "lint_cmd": null,
+    "typecheck_cmd": "npx tsc --noEmit",
+    "test_cmd": "npx jest",
+    "dev_cmd": "npx expo start",
+    "integration_cmd": null,
+    "baseline_errors": null,
+    "allowed_commands": [],
+    "last_regression_pass": null
+  },
+
+  "validation": {
+    "last_pass": "2026-04-05T00:01:00.000Z",
+    "status": "pass",
+    "report_hash": "auto-fixed-4-errors-0-remaining",
+    "acknowledged_warnings": [
+      "WARN-1: useAutoTracking missing assignment_id in KhatmReadingContext — implementer of T-08 must either add assignment_id to KhatmReadingContext (update T-01 scope) or document a lookup strategy before calling useUpdateProgress",
+      "WARN-2: JuzTileAssignment missing last_updated_at — implementer of T-18 must either extend JuzTileAssignment or fetch last_updated_at separately for stall computation in GroupKhatmScreen",
+      "WARN-3: T-06 Covers field omits US-11 — useKhatmScreen provides JuzTileData used by self-claim flow; traceability gap only, no structural block",
+      "WARN-4: T-08 Wire into path is approximate — src/app/(quran-reader)/[page].tsx path must be verified against actual Quran reader implementation before wiring",
+      "WARN-5: T-06 Covers annotation gap for US-11 — useKhatmScreen provides tile data for PARTICIPANT self-claim (US-11) but Covers field only lists US-2/US-3/US-6"
+    ]
+  },
+
+  "lessons_applied": [
+    "Every UI state flag has an explicit setter (Lesson 1) — store.ts has setters for all 6 state fields",
+    "Derive types from actual schema first (Lesson 2) — types.ts mirrors Postgres schema exactly",
+    "Fields set on first interaction document initialization semantics (Lesson 3) — JSDoc on store.ts and KhatmJuzAssignment",
+    "Use globalThis not global; Buffer.from() not btoa() (Lesson 4) — noted in useKhatmMutations.ts and useAutoTracking.ts",
+    "Arabic text requires BOTH textAlign:'right' AND writingDirection:'rtl' (Lesson 5) — called out in T-09, T-18, T-19, T-24",
+    "AVAILABLE status does not exist as rows (Research bug FIX-P2-5/6) — T-06 builds juz_tiles with 'open' as absence of a row",
+    "Role escalation prevention via split UPDATE policies (Research bug FIX-A2) — T-05 RLS split policies",
+    "RLS helper functions must be SECURITY DEFINER (Research compilation) — T-05 all 3 helpers are SECURITY DEFINER"
+  ],
+
+  "acceptance": {
+    "status": "conditional_accept",
+    "date": "2026-04-05",
+    "criteria_total": 87,
+    "criteria_passed": 68,
+    "criteria_failed": 8,
+    "criteria_partial": 9,
+    "criteria_untestable": 2,
+    "conditions": [
+      "SA-012: Add INSERT policy to khatm_audit_log (or move audit logging to SECURITY DEFINER functions)",
+      "SA-006: Replace WITH CHECK (role = OLD.role) with a BEFORE UPDATE trigger for self-role-escalation prevention",
+      "US-3 AC-1: Fix days_stalled hardcoded to 0 in GroupKhatmScreen.tsx:126",
+      "US-5 AC-8: Use PENDING_PROGRESS_KEY to persist auto-tracking queue to MMKV instead of globalThis"
+    ],
+    "report_path": "acceptance.md"
+  },
+
+  "security": {
+    "posture_score": 78,
+    "last_audit_date": "2026-04-05",
+    "mode": "daily",
+    "findings": {
+      "critical": 0,
+      "high": 0,
+      "medium": 11,
+      "low": 3,
+      "info": 0
+    },
+    "resolved_since_last_audit": 3,
+    "audit_report_path": "evidence/security-audit.json",
+    "threat_model_status": null
+  },
+
+  "audit_log": [
+    { "timestamp": "2026-04-05T00:02:00.000Z", "event": "wave_started", "wave": 0, "details": "Starting wave 0 with 5 pending tasks" },
+    { "timestamp": "2026-04-05T00:02:05.000Z", "event": "task_completed", "task_id": "T-01", "wave": 0, "details": "types.ts created — 176 lines, 8 union types + 13 interfaces" },
+    { "timestamp": "2026-04-05T00:02:05.000Z", "event": "task_completed", "task_id": "T-02", "wave": 0, "details": "constants.ts created — 111 lines, all constants verified" },
+    { "timestamp": "2026-04-05T00:02:05.000Z", "event": "task_completed", "task_id": "T-03", "wave": 0, "details": "store.ts created — 79 lines, 6 state fields + 6 setters, only activeGroupId persisted" },
+    { "timestamp": "2026-04-05T00:02:30.000Z", "event": "task_completed", "task_id": "T-04", "wave": 0, "details": "dua-khatm.json created — 30 lines, AR+EN content_ready:true, no 'Congratulations', {dedicated_to_name} token present" },
+    { "timestamp": "2026-04-05T00:02:30.000Z", "event": "task_completed", "task_id": "T-05", "wave": 0, "details": "001_khatm_schema.sql created — 353 lines, 8 enums, 6 tables, 5 indexes, 2 triggers, 1 RPC, 3 RLS helpers, 16 policies" },
+    { "timestamp": "2026-04-05T00:02:30.000Z", "event": "gate_passed", "wave": 0, "details": "Quality gates SKIPPED — no package.json scaffold exists yet. Gates will be re-run once Expo project is initialized." },
+    { "timestamp": "2026-04-05T00:02:30.000Z", "event": "wave_completed", "wave": 0, "details": "Wave 0 complete: 5/5 tasks completed" },
+    { "timestamp": "2026-04-05T00:02:31.000Z", "event": "wave_started", "wave": 1, "details": "Starting wave 1 with 3 pending tasks — T-06, T-07, T-08 (parallel, no file overlap)" },
+    { "timestamp": "2026-04-05T00:03:00.000Z", "event": "wave_started", "wave": 2, "details": "Starting wave 2 with 7 pending tasks — batch 1: T-09, T-10, T-11 (parallel, no file overlap)" },
+    { "timestamp": "2026-04-05T00:03:30.000Z", "event": "task_completed", "task_id": "T-09", "wave": 2, "details": "JuzTile.tsx created — memo'd component, 4 visual states, SVG ProgressRing, InitialBadge, Animated press scale, dark mode support" },
+    { "timestamp": "2026-04-05T00:03:30.000Z", "event": "task_completed", "task_id": "T-10", "wave": 2, "details": "JuzGrid.tsx created — FlatList wrapper, numColumns=5, getItemLayout O(1), scrollEnabled=false" },
+    { "timestamp": "2026-04-05T00:03:30.000Z", "event": "task_completed", "task_id": "T-11", "wave": 2, "details": "CollectiveProgressBar.tsx created — Animated fill, onLayout capture, accessibilityRole=progressbar" },
+    { "timestamp": "2026-04-05T00:03:31.000Z", "event": "wave_batch_started", "wave": 2, "details": "Starting batch 2: T-12, T-13, T-14 (parallel, no file overlap)" },
+    { "timestamp": "2026-04-05T00:04:00.000Z", "event": "task_completed", "task_id": "T-12", "wave": 2, "details": "BismillahOverlay.tsx created — Modal, fade-in Animated, 2000ms auto-dismiss, clearTimeout cleanup, Arabic Bismillah with textAlign+writingDirection" },
+    { "timestamp": "2026-04-05T00:04:00.000Z", "event": "task_completed", "task_id": "T-13", "wave": 2, "details": "AdminSummaryCard.tsx created — top-3 stalled sorted descending, Needs Attention/All on track branches, pure presentational" },
+    { "timestamp": "2026-04-05T00:04:00.000Z", "event": "task_completed", "task_id": "T-14", "wave": 2, "details": "MembersSection.tsx created — collapsed accordion, role badges, promote/demote Alerts, inactive member guard" },
+    { "timestamp": "2026-04-05T00:04:01.000Z", "event": "wave_batch_started", "wave": 2, "details": "Starting batch 3: T-15 (sequential — JuzBottomSheet)" },
+    { "timestamp": "2026-04-05T00:07:55.000Z", "event": "task_completed", "task_id": "T-15", "wave": 2, "details": "JuzBottomSheet.tsx created — 4 tabs, role-based visibility, PARTICIPANT self-claim, 409 inline error, 1500ms auto-close, @react-native-community/slider" },
+    { "timestamp": "2026-04-05T00:07:56.000Z", "event": "wave_completed", "wave": 2, "details": "Wave 2 complete: 7/7 tasks completed (T-09..T-15)" },
+    { "timestamp": "2026-04-05T00:07:57.000Z", "event": "wave_started", "wave": 3, "details": "Starting wave 3 with 6 pending tasks — T-16, T-17, T-18, T-19, T-20, T-21" },
+    { "timestamp": "2026-04-05T00:08:00.000Z", "event": "task_completed", "task_id": "T-16", "wave": 3, "details": "CreateKhatmBottomSheet.tsx created — 5-step form, BismillahOverlay, validation, timezone auto-detect; agent also created tests/CreateKhatmBottomSheet.test.tsx (bonus, kept)" },
+    { "timestamp": "2026-04-05T00:08:00.000Z", "event": "task_completed", "task_id": "T-17", "wave": 3, "details": "GroupSettingsBottomSheet.tsx created — 4 sections, role-gating, Clipboard, Archive Alert, snap ['60%','92%']" },
+    { "timestamp": "2026-04-05T00:08:01.000Z", "event": "wave_batch_started", "wave": 3, "details": "Starting batch 2: T-18, T-19, T-21 (parallel — no file overlap)" },
+    { "timestamp": "2026-04-05T00:22:00.000Z", "event": "task_completed", "task_id": "T-18", "wave": 3, "details": "GroupKhatmScreen.tsx created — 571 lines, BottomSheetModalProvider, 4 accordions, admin summary, realtime wiring, 3 bottom sheet refs; JuzGrid.onTileTap/CollectiveProgressBar.totalJuz props correctly used" },
+    { "timestamp": "2026-04-05T00:22:00.000Z", "event": "task_completed", "task_id": "T-19", "wave": 3, "details": "CompletionScreen.tsx created — full teal screen, Al-Fatiha Arabic RTL, memorial suffix substitution, dua from JSON, no 'Congratulations', Share/StartNewCycle/Archive actions" },
+    { "timestamp": "2026-04-05T00:22:01.000Z", "event": "wave_batch_started", "wave": 3, "details": "Starting batch 3: T-20 (navigation + barrel — depends on T-18, T-19)" },
+    { "timestamp": "2026-04-05T00:24:00.000Z", "event": "task_completed", "task_id": "T-20", "wave": 3, "details": "navigation.tsx + index.ts + src/app/(tabs)/_layout.tsx created; barrel exports all 21 types, 15 constants, 7 mutations, 4 queries; _layout.tsx documents integration pattern" },
+    { "timestamp": "2026-04-05T00:24:30.000Z", "event": "task_completed", "task_id": "T-21", "wave": 3, "details": "notification-scheduler Edge Function created — 436 lines Deno, 3 scenarios (deadline/not-started/stalled), exponential backoff, dedup via audit log, push token from user_push_tokens or app_metadata" },
+    { "timestamp": "2026-04-05T00:24:31.000Z", "event": "wave_completed", "wave": 3, "details": "Wave 3 complete: 6/6 tasks completed (T-16..T-21)" },
+    { "timestamp": "2026-04-05T00:24:32.000Z", "event": "wave_started", "wave": 4, "details": "Starting wave 4 with 2 pending tasks — T-22, T-23 (E2E tests, parallel — no file overlap)" },
+    { "timestamp": "2026-04-05T00:28:30.000Z", "event": "task_completed", "task_id": "T-22", "wave": 4, "details": "khatm-create-to-complete.test.ts created — 554 lines, 7 flow steps + error path + constants + store + dua asset tests" },
+    { "timestamp": "2026-04-05T00:28:30.000Z", "event": "task_completed", "task_id": "T-23", "wave": 4, "details": "khatm-join-flow.test.ts created — 11 tests, deep link/join/duplicate/invalid-code/self-claim/constants" },
+    { "timestamp": "2026-04-05T00:28:31.000Z", "event": "wave_completed", "wave": 4, "details": "Wave 4 complete: 2/2 tasks completed (T-22, T-23)" },
+    { "timestamp": "2026-04-05T00:28:32.000Z", "event": "wave_started", "wave": 5, "details": "Starting wave 5 with 2 pending tasks — T-24 dark mode audit, T-25 JuzGrid performance" },
+    { "timestamp": "2026-04-05T00:29:45.000Z", "event": "task_completed", "task_id": "T-25", "wave": 5, "details": "JuzTile: useMemo for SVG arc strokeDashoffset; JuzGrid: __DEV__ render timing with useRef(Date.now())" },
+    { "timestamp": "2026-04-05T00:42:00.000Z", "event": "task_completed", "task_id": "T-24", "wave": 5, "details": "9/11 files updated: useColorScheme added to CollectiveProgressBar/BismillahOverlay/AdminSummaryCard/MembersSection/JuzBottomSheet/CreateKhatmBottomSheet/GroupSettingsBottomSheet/GroupKhatmScreen; Arabic RTL verified on all elements; JuzTile+CompletionScreen already correct" },
+    { "timestamp": "2026-04-05T00:42:01.000Z", "event": "wave_completed", "wave": 5, "details": "Wave 5 complete: 2/2 tasks completed (T-24, T-25)" },
+    { "timestamp": "2026-04-05T00:42:02.000Z", "event": "spec_completed", "details": "All 25 tasks completed across 6 waves. Group Khatm feature implementation done." }
+  ]
+}

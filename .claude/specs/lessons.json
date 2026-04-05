@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "lessons": [
+    {
+      "spec_name": "group-khatm",
+      "date": "2026-04-05",
+      "category": "design",
+      "lesson": "Every PARTICIPANT-facing write path must be backed by an explicit RLS policy or a SECURITY DEFINER RPC at design time — not discovered in post-spec security audit. The three HIGH findings (SA-002/003/007) were all writable paths that lacked one of these guards.",
+      "source": "retro",
+      "severity": "high",
+      "enforceable": false,
+      "check": null
+    },
+    {
+      "spec_name": "group-khatm",
+      "date": "2026-04-05",
+      "category": "implementation",
+      "lesson": "Postgres UPDATE policies cannot reference OLD in their WITH CHECK clause — only in USING. To prevent self-mutation of a field (e.g. role escalation), use a BEFORE UPDATE trigger with WHEN (NEW.field IS DISTINCT FROM OLD.field) rather than a WITH CHECK constraint.",
+      "source": "retro",
+      "severity": "high",
+      "enforceable": false,
+      "check": null
+    },
+    {
+      "spec_name": "group-khatm",
+      "date": "2026-04-05",
+      "category": "design",
+      "lesson": "Audit/log tables need their own INSERT policy. They are easy to skip because they are infrastructure, not user-facing. Without an INSERT policy, audit writes fail silently and the feature appears to work while producing no audit trail.",
+      "source": "retro",
+      "severity": "high",
+      "enforceable": false,
+      "check": null
+    },
+    {
+      "spec_name": "group-khatm",
+      "date": "2026-04-05",
+      "category": "design",
+      "lesson": "Offline-tolerant queues must use persistent storage (MMKV, AsyncStorage, SQLite) — never in-memory (globalThis, module-level arrays). In-memory queues are lost on app crash or background eviction. Design the storage layer first, not as an afterthought.",
+      "source": "retro",
+      "severity": "high",
+      "enforceable": false,
+      "check": null
+    },
+    {
+      "spec_name": "group-khatm",
+      "date": "2026-04-05",
+      "category": "requirements",
+      "lesson": "Validator WARN annotations are pre-mortems, not noise. Both WARN-2 (JuzTileAssignment missing last_updated_at → days_stalled hardcoded to 0) and the globalThis note became UAT conditions. Treat acknowledged warnings as deferred tasks that must be resolved, not silenced.",
+      "source": "retro",
+      "severity": "medium",
+      "enforceable": false,
+      "check": null
+    },
+    {
+      "spec_name": "group-khatm",
+      "date": "2026-04-05",
+      "category": "design",
+      "lesson": "Large orchestration screens (500+ lines, 5+ concerns) should be split into ≥2 tasks. GroupKhatmScreen at 571 lines with 4 accordions, 3 bottom sheet refs, admin logic, realtime wiring, and stall computation was the largest single-task time sink (~14 min) and produced the days_stalled stub bug.",
+      "source": "retro",
+      "severity": "medium",
+      "enforceable": false,
+      "check": null
+    },
+    {
+      "spec_name": "group-khatm",
+      "date": "2026-04-05",
+      "category": "design",
+      "lesson": "Multi-step client mutations that must be atomic (e.g. create group + copy participants) should be designed as SECURITY DEFINER RPCs from the start, not refactored in after a security audit. The start_new_cycle case required a post-spec migration because the original design used 4 sequential client calls.",
+      "source": "retro",
+      "severity": "medium",
+      "enforceable": false,
+      "check": null
+    },
+    {
+      "spec_name": "group-khatm",
+      "date": "2026-04-05",
+      "category": "implementation",
+      "lesson": "Dark mode as a deferred Wave 5 audit sweep is an efficient pattern — avoids merge conflicts during component development and produces a single focused pass. Keep it as the last wave before E2E tests.",
+      "source": "retro",
+      "severity": "low",
+      "enforceable": false,
+      "check": null
+    },
+    {
+      "spec_name": "group-khatm",
+      "date": "2026-04-05",
+      "category": "implementation",
+      "lesson": "Deriving TypeScript types from the Postgres schema column-by-column before any implementation prevents downstream mismatches. The types.ts first-wave approach worked with zero type-level rework across 25 tasks.",
+      "source": "retro",
+      "severity": "low",
+      "enforceable": false,
+      "check": null
+    }
+  ]
+}
