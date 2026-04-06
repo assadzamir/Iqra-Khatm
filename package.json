@@ -48,5 +48,6 @@
   "jest": {
     "preset": "jest-expo"
   },
-  "private": true
+  "private": true,
+  "packageManager": "yarn@1.22.22"
 }
