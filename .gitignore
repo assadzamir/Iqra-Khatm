@@ -3,3 +3,5 @@ node_modules/
 expo-temp/
 supabase/.temp/
 *.log
+
+package-lock.json
