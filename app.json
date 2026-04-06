@@ -35,9 +35,6 @@
     "experiments": {
       "typedRoutes": true
     },
-    "install": {
-      "exclude": ["eslint-config-expo"]
-    },
     "extra": {
       "router": {
         "origin": false
