@@ -35,7 +35,9 @@
     "experiments": {
       "typedRoutes": true
     },
-    "nodeVersion": "20.19.4",
+    "install": {
+      "exclude": ["eslint-config-expo"]
+    },
     "extra": {
       "router": {
         "origin": false
