@@ -36,6 +36,7 @@
     "experiments": {
       "typedRoutes": true
     },
+    "nodeVersion": "20.19.4",
     "extra": {
       "router": {
         "origin": false
