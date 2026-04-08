@@ -29,7 +29,7 @@ import { BismillahOverlay } from './BismillahOverlay';
 // ---------------------------------------------------------------------------
 
 interface CreateKhatmBottomSheetProps {
-  sheetRef: React.RefObject<BottomSheetModal>;
+  sheetRef: React.RefObject<BottomSheetModal | null>;
   onCreated: (groupId: string) => void;
 }
 

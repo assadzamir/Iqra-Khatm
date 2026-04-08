@@ -19,7 +19,7 @@ CREATE TYPE progress_source AS ENUM ('IN_APP', 'AUTO_TRACKING', 'ADMIN_OVERRIDE'
 -- ============================================================
 
 CREATE TABLE khatm_groups (
-  id                        uuid          NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id                        uuid          NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   title                     varchar(80)   NOT NULL,
   intention                 text,
   occasion_type             occasion_type NOT NULL DEFAULT 'GENERAL',
@@ -41,7 +41,7 @@ CREATE TABLE khatm_groups (
 );
 
 CREATE TABLE khatm_participants (
-  id             uuid                NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id             uuid                NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   group_id       uuid                NOT NULL REFERENCES khatm_groups(id) ON DELETE CASCADE,
   user_id        uuid                         REFERENCES auth.users(id) ON DELETE SET NULL,
   name           varchar(100)        NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE khatm_participants (
 );
 
 CREATE TABLE khatm_juz_assignments (
-  id             uuid        NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id             uuid        NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   group_id       uuid        NOT NULL REFERENCES khatm_groups(id) ON DELETE CASCADE,
   participant_id uuid        NOT NULL REFERENCES khatm_participants(id) ON DELETE CASCADE,
   juz_number     smallint    NOT NULL CHECK (juz_number BETWEEN 1 AND 30),
@@ -71,7 +71,7 @@ CREATE TABLE khatm_juz_assignments (
 );
 
 CREATE TABLE khatm_progress_updates (
-  id               uuid            NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id               uuid            NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   assignment_id    uuid            NOT NULL REFERENCES khatm_juz_assignments(id) ON DELETE CASCADE,
   participant_id   uuid            NOT NULL REFERENCES khatm_participants(id),
   progress_percent smallint        NOT NULL,
@@ -83,7 +83,7 @@ CREATE TABLE khatm_progress_updates (
 );
 
 CREATE TABLE khatm_reminder_schedules (
-  id          uuid        NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id          uuid        NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   group_id    uuid        NOT NULL REFERENCES khatm_groups(id) ON DELETE CASCADE,
   days_before smallint    NOT NULL CHECK (days_before >= 0),
   label       varchar(50),
@@ -92,7 +92,7 @@ CREATE TABLE khatm_reminder_schedules (
 );
 
 CREATE TABLE khatm_audit_log (
-  id                   uuid        NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id                   uuid        NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   group_id             uuid        NOT NULL REFERENCES khatm_groups(id) ON DELETE CASCADE,
   actor_participant_id uuid                 REFERENCES khatm_participants(id) ON DELETE SET NULL,
   action_type          varchar(50) NOT NULL,
@@ -302,8 +302,7 @@ CREATE POLICY khatm_participants_update_admin ON khatm_participants
 -- Participant can update their own row (last_active_at, etc.)
 -- but cannot escalate their own role
 CREATE POLICY khatm_participants_update_self ON khatm_participants
-  FOR UPDATE USING (user_id = auth.uid())
-  WITH CHECK (role = OLD.role);
+  FOR UPDATE USING (user_id = auth.uid());
 
 -- khatm_juz_assignments
 CREATE POLICY khatm_juz_assignments_select ON khatm_juz_assignments

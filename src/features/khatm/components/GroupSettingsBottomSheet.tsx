@@ -2,7 +2,7 @@
 // T-17: GroupSettingsBottomSheet — Group settings panel for admins/co-admins
 // ---------------------------------------------------------------------------
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -25,7 +25,7 @@ import { supabase } from '@/lib/supabase';
 // ---------------------------------------------------------------------------
 
 interface GroupSettingsBottomSheetProps {
-  sheetRef: React.RefObject<BottomSheetModal>;
+  sheetRef: React.RefObject<BottomSheetModal | null>;
   groupId: string;
   group: KhatmGroup;
   myRole: ParticipantRole;
@@ -66,6 +66,15 @@ export function GroupSettingsBottomSheet({
   const [newReminderInput, setNewReminderInput] = useState<string>('');
   const [reminderError, setReminderError] = useState<string | null>(null);
 
+  const saveErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear error timer on unmount
+  useEffect(() => {
+    return () => {
+      if (saveErrorTimerRef.current) clearTimeout(saveErrorTimerRef.current);
+    };
+  }, []);
+
   // ── Derived permissions ───────────────────────────────────────────────────
   const canManageInvites = CAN_MANAGE_INVITES.includes(myRole);
   const canDeleteGroup = CAN_DELETE_GROUP.includes(myRole);
@@ -94,11 +103,10 @@ export function GroupSettingsBottomSheet({
         },
         onError: () => {
           setSaveError('Failed to save settings. Please try again.');
-          const timer: ReturnType<typeof setTimeout> = setTimeout(() => {
+          if (saveErrorTimerRef.current) clearTimeout(saveErrorTimerRef.current);
+          saveErrorTimerRef.current = setTimeout(() => {
             setSaveError(null);
           }, 3000);
-          // capture for potential future cleanup — intentional fire-and-forget
-          void timer;
         },
       }
     );

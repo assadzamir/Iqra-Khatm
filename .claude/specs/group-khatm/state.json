@@ -331,17 +331,18 @@
   },
 
   "security": {
-    "posture_score": 78,
-    "last_audit_date": "2026-04-05",
+    "posture_score": 80,
+    "last_audit_date": "2026-04-08",
     "mode": "daily",
     "findings": {
       "critical": 0,
       "high": 0,
-      "medium": 11,
-      "low": 3,
+      "medium": 10,
+      "low": 4,
       "info": 0
     },
     "resolved_since_last_audit": 3,
+    "new_since_last_audit": 3,
     "audit_report_path": "evidence/security-audit.json",
     "threat_model_status": null
   },

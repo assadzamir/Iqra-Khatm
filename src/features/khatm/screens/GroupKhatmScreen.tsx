@@ -183,12 +183,20 @@ export function GroupKhatmScreen({ route, navigation }: Props): React.JSX.Elemen
     );
   }
 
+  // ── Realtime connection banner (reactive) ──────────────────────────────────
+  const [isDisconnected, setIsDisconnected] = useState(false);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsDisconnected(!connected.current);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [connected]);
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <BottomSheetModalProvider>
       <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? KHATM_COLORS.darkBg : KHATM_COLORS.pageBgLight }]}>
-        {/* TODO: reconnect banner needs polling useEffect to be truly reactive */}
-        {!connected.current && (
+        {isDisconnected && (
           <View style={styles.reconnectBanner}>
             <Text style={styles.reconnectText}>Reconnecting...</Text>
           </View>
