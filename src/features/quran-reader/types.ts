@@ -2,6 +2,13 @@
 // QuranVerse shape derived from alquran.cloud API response ayah object
 // Bookmark shape derived from user_bookmarks table in migration 005
 
+// Madani mushaf page count — the single source of truth for page bounds
+export const TOTAL_QURAN_PAGES = 604;
+
+export function isValidQuranPage(page: number): boolean {
+  return Number.isInteger(page) && page >= 1 && page <= TOTAL_QURAN_PAGES;
+}
+
 export type FontSize = 'small' | 'medium' | 'large';
 export type ReaderTheme = 'light' | 'dark' | 'sepia';
 

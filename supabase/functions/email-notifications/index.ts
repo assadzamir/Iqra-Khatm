@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { create, getNumericDate } from 'https://deno.land/x/djwt@v3.0.2/mod.ts';
+import { createUnsubscribeJwt } from '../_shared/jwt.ts';
 
 interface EmailParticipant {
   participant_id: string;
@@ -99,31 +99,6 @@ function buildHtmlBody(
 </html>`;
 }
 
-async function generateUnsubscribeJwt(participantId: string): Promise<string> {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const jwtSecret = Deno.env.get('SUPABASE_JWT_SECRET')!;
-
-  const keyData = new TextEncoder().encode(jwtSecret);
-  const key = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign', 'verify']
-  );
-
-  return await create(
-    { alg: 'HS256', typ: 'JWT' },
-    {
-      sub: participantId,
-      iss: supabaseUrl,
-      aud: 'email-unsubscribe',
-      exp: getNumericDate(60 * 60 * 24 * 30), // 30 days
-    },
-    key
-  );
-}
-
 Deno.serve(async (req: Request) => {
   // Auth check — service-role only
   const authHeader = req.headers.get('Authorization');
@@ -155,100 +130,117 @@ Deno.serve(async (req: Request) => {
 
   const result: EmailNotificationResponse = { sent: 0, failed: 0, skipped: 0 };
 
-  for (const participant of body.participants) {
-    // Skip if notifications disabled
-    if (!participant.email_notifications_enabled) {
-      result.skipped++;
-      continue;
-    }
+  // Skip disabled / email-less participants
+  const eligible = body.participants.filter(
+    (p) => p.email_notifications_enabled && p.email
+  );
+  result.skipped += body.participants.length - eligible.length;
 
-    // Skip if no email
-    if (!participant.email) {
-      result.skipped++;
-      continue;
-    }
-
-    // Dedup check: already sent this event_type today?
-    const { data: existing } = await supabase
+  // Dedup check for all recipients in one query: already sent this
+  // event_type today?
+  let alreadySent = new Set<string>();
+  if (eligible.length > 0) {
+    const { data: existing, error: dedupError } = await supabase
       .from('khatm_audit_log')
-      .select('id')
+      .select('new_value')
       .eq('action_type', 'EMAIL_SENT')
       .gte('created_at', todayStart.toISOString())
-      .filter('new_value->>participant_id', 'eq', participant.participant_id)
       .filter('new_value->>event_type', 'eq', body.event_type)
-      .maybeSingle();
-
-    if (existing) {
-      result.skipped++;
-      continue;
+      .in('new_value->>participant_id', eligible.map((p) => p.participant_id));
+    if (dedupError) {
+      console.error('[email-notifications] dedup query error:', dedupError.message);
     }
-
-    // Resolve per-recipient values (per-assignment events differ per recipient)
-    const groupId = participant.group_id ?? body.group_id;
-    const groupName = participant.group_name ?? body.group_name;
-    const extra = participant.extra ?? body.extra;
-
-    // Build email
-    const unsubscribeToken = await generateUnsubscribeJwt(participant.participant_id);
-    const unsubscribeUrl = `${functionBaseUrl}?token=${unsubscribeToken}`;
-    const subject = buildSubject(body.event_type, groupName, extra);
-    const html = buildHtmlBody(
-      participant.name,
-      groupName,
-      body.event_type,
-      unsubscribeUrl,
-      extra
+    alreadySent = new Set(
+      (existing ?? []).map(
+        (r) => (r.new_value as Record<string, unknown>)?.participant_id as string
+      )
     );
+  }
 
-    // Send via Resend (with one retry on failure)
-    let sendSuccess = false;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      if (attempt > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-      }
-
-      const resendRes = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${resendApiKey}`,
-        },
-        body: JSON.stringify({
-          from: 'Iqra Khatm <notifications@iqra-app.com>',
-          to: [participant.email],
-          subject,
-          html,
-          headers: {
-            'List-Unsubscribe': `<${unsubscribeUrl}>`,
-          },
-        }),
-      });
-
-      if (resendRes.ok) {
-        sendSuccess = true;
-        break;
-      }
+  const toSend = eligible.filter((p) => {
+    if (alreadySent.has(p.participant_id)) {
+      result.skipped++;
+      return false;
     }
+    return true;
+  });
 
-    // group_id is a NOT NULL top-level column on khatm_audit_log — it must
-    // be set here, not only inside new_value (never log RESEND_API_KEY)
-    const { error: auditError } = await supabase.from('khatm_audit_log').insert({
-      group_id: groupId,
-      action_type: sendSuccess ? 'EMAIL_SENT' : 'EMAIL_FAILED',
-      new_value: {
-        participant_id: participant.participant_id,
-        event_type: body.event_type,
+  const auditRows: Array<Record<string, unknown>> = [];
+
+  await Promise.allSettled(
+    toSend.map(async (participant) => {
+      const groupId = participant.group_id ?? body.group_id;
+      const groupName = participant.group_name ?? body.group_name;
+      const extra = participant.extra ?? body.extra;
+
+      const unsubscribeToken = await createUnsubscribeJwt(participant.participant_id);
+      const unsubscribeUrl = `${functionBaseUrl}?token=${unsubscribeToken}`;
+      const subject = buildSubject(body.event_type, groupName, extra);
+      const html = buildHtmlBody(
+        participant.name,
+        groupName,
+        body.event_type,
+        unsubscribeUrl,
+        extra
+      );
+
+      // Send via Resend (with one retry on failure)
+      let sendSuccess = false;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        if (attempt > 0) {
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+        }
+        try {
+          const resendRes = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${resendApiKey}`,
+            },
+            body: JSON.stringify({
+              from: 'Iqra Khatm <notifications@iqra-app.com>',
+              to: [participant.email],
+              subject,
+              html,
+              headers: {
+                'List-Unsubscribe': `<${unsubscribeUrl}>`,
+              },
+            }),
+          });
+          if (resendRes.ok) {
+            sendSuccess = true;
+            break;
+          }
+        } catch (_e) {
+          // network error — fall through to retry
+        }
+      }
+
+      // group_id is a NOT NULL top-level column on khatm_audit_log — it must
+      // be set here, not only inside new_value (never log RESEND_API_KEY)
+      auditRows.push({
         group_id: groupId,
-      },
-    });
+        action_type: sendSuccess ? 'EMAIL_SENT' : 'EMAIL_FAILED',
+        new_value: {
+          participant_id: participant.participant_id,
+          event_type: body.event_type,
+          group_id: groupId,
+        },
+      });
+      if (sendSuccess) {
+        result.sent++;
+      } else {
+        result.failed++;
+      }
+    })
+  );
+
+  if (auditRows.length > 0) {
+    const { error: auditError } = await supabase
+      .from('khatm_audit_log')
+      .insert(auditRows);
     if (auditError) {
       console.error('[email-notifications] audit log insert error:', auditError.message);
-    }
-
-    if (sendSuccess) {
-      result.sent++;
-    } else {
-      result.failed++;
     }
   }
 

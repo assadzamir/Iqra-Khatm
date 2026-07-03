@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, Modal, FlatList, useColorScheme } from 'react-native';
 import { useState } from 'react';
 import { JUZ_ARABIC_NAMES, KHATM_COLORS } from '@/features/khatm/constants';
+import { TOTAL_QURAN_PAGES } from '@/features/quran-reader/types';
 
 interface PageNavigationBarProps {
   currentPage: number;
@@ -39,13 +40,13 @@ export function PageNavigationBar(props: PageNavigationBarProps) {
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.btn, props.currentPage >= 604 && styles.btnDisabled]}
+        style={[styles.btn, props.currentPage >= TOTAL_QURAN_PAGES && styles.btnDisabled]}
         onPress={props.onNext}
-        disabled={props.currentPage >= 604}
+        disabled={props.currentPage >= TOTAL_QURAN_PAGES}
         accessibilityLabel="Next page"
-        accessibilityState={{ disabled: props.currentPage >= 604 }}
+        accessibilityState={{ disabled: props.currentPage >= TOTAL_QURAN_PAGES }}
       >
-        <Text style={[styles.btnText, props.currentPage >= 604 && styles.btnTextDisabled]}>Next ›</Text>
+        <Text style={[styles.btnText, props.currentPage >= TOTAL_QURAN_PAGES && styles.btnTextDisabled]}>Next ›</Text>
       </TouchableOpacity>
 
       {/* Juz jump modal */}

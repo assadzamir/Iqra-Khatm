@@ -13,6 +13,7 @@ import { PageNavigationBar } from '@/features/quran-reader/components/PageNaviga
 import { BookmarkSheet } from '@/features/quran-reader/components/BookmarkSheet';
 import { useReaderSettings } from '@/features/quran-reader/hooks/useReaderSettings';
 import { useBookmarks } from '@/features/quran-reader/hooks/useBookmarks';
+import { TOTAL_QURAN_PAGES, isValidQuranPage } from '@/features/quran-reader/types';
 
 // ---------------------------------------------------------------------------
 // KhatmAutoTracker — isolated component so useAutoTracking is called
@@ -40,7 +41,7 @@ export default function QuranReaderPage() {
   // No early return here — all hooks below must run on every render (Rules of
   // Hooks); the redirect for an invalid param happens in the effect below.
   const parsed = parseInt(page ?? '1', 10);
-  const isValidPage = !isNaN(parsed) && parsed >= 1 && parsed <= 604;
+  const isValidPage = isValidQuranPage(parsed);
   const currentPage = isValidPage ? parsed : 1;
 
   const { fontSize, theme, showTranslation, setFontSize, setTheme, setShowTranslation } =
@@ -89,7 +90,7 @@ export default function QuranReaderPage() {
     if (currentPage > 1) router.replace(`/(quran-reader)/${currentPage - 1}`);
   };
   const onNext = () => {
-    if (currentPage < 604) router.replace(`/(quran-reader)/${currentPage + 1}`);
+    if (currentPage < TOTAL_QURAN_PAGES) router.replace(`/(quran-reader)/${currentPage + 1}`);
   };
   const onJumpToJuz = (juzNumber: number) =>
     router.replace(`/(quran-reader)/${JUZ_PAGE_RANGES[juzNumber].startPage}`);

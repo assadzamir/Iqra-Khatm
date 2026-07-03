@@ -39,60 +39,73 @@ async function sendPushWithRetry(
 }
 
 // ---------------------------------------------------------------------------
-// Resolve Expo push token for a participant
+// Resolve Expo push tokens for a batch of participants (one query, with a
+// per-user auth-metadata fallback for participants missing a token row).
 // TODO: add push_token column to khatm_participants or user_push_tokens table
 // ---------------------------------------------------------------------------
-async function getPushToken(participantId: string): Promise<string | null> {
+async function getPushTokens(participantIds: string[]): Promise<Map<string, string>> {
+  const tokens = new Map<string, string>();
+  if (participantIds.length === 0) return tokens;
+
   // Attempt 1: hypothetical user_push_tokens table
   try {
-    const { data: tokenRow } = await supabase
+    const { data } = await supabase
       .from('user_push_tokens')
-      .select('push_token')
-      .eq('participant_id', participantId)
-      .maybeSingle();
-    if (tokenRow?.push_token) return tokenRow.push_token as string;
-  } catch (_e) {
-    // table may not exist yet — continue
-  }
-
-  // Attempt 2: auth.users raw_app_meta_data (requires service role)
-  try {
-    const { data: participant } = await supabase
-      .from('khatm_participants')
-      .select('user_id')
-      .eq('id', participantId)
-      .maybeSingle();
-
-    if (participant?.user_id) {
-      const { data: userRecord } = await supabase.auth.admin.getUserById(
-        participant.user_id as string
-      );
-      const token =
-        (userRecord?.user?.app_metadata as Record<string, unknown>)
-          ?.expo_push_token as string | undefined;
-      if (token) return token;
+      .select('participant_id, push_token')
+      .in('participant_id', participantIds);
+    for (const row of data ?? []) {
+      if (row.push_token) {
+        tokens.set(row.participant_id as string, row.push_token as string);
+      }
     }
   } catch (_e) {
-    // ignore
+    // table may not exist yet — continue to fallback
   }
 
-  return null;
+  const missing = participantIds.filter((id) => !tokens.has(id));
+  if (missing.length === 0) return tokens;
+
+  // Attempt 2: auth.users raw_app_meta_data (requires service role).
+  // No batch admin API — resolve user ids in one query, then look up
+  // concurrently.
+  const { data: participantRows } = await supabase
+    .from('khatm_participants')
+    .select('id, user_id')
+    .in('id', missing);
+
+  await Promise.all(
+    (participantRows ?? []).map(async (p) => {
+      if (!p.user_id) return;
+      try {
+        const { data: userRecord } = await supabase.auth.admin.getUserById(
+          p.user_id as string
+        );
+        const token = (userRecord?.user?.app_metadata as Record<string, unknown>)
+          ?.expo_push_token as string | undefined;
+        if (token) tokens.set(p.id as string, token);
+      } catch (_e) {
+        // ignore
+      }
+    })
+  );
+
+  return tokens;
 }
 
 // ---------------------------------------------------------------------------
-// Deduplication: check whether a NOTIFICATION_SENT log already exists today
-// for this assignment_id.
+// Deduplication: which of these assignments already have a NOTIFICATION_SENT
+// log today? One query for the whole batch.
 // ---------------------------------------------------------------------------
-async function alreadySentToday(assignmentId: string): Promise<boolean> {
+async function alreadySentTodaySet(assignmentIds: string[]): Promise<Set<string>> {
+  if (assignmentIds.length === 0) return new Set();
   const todayStart = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
-  const { data: existingLog } = await supabase
+  const { data: existingLogs } = await supabase
     .from('khatm_audit_log')
-    .select('id')
+    .select('target_entity_id')
     .eq('action_type', 'NOTIFICATION_SENT')
-    .eq('target_entity_id', assignmentId)
-    .gte('created_at', todayStart)
-    .maybeSingle();
-  return existingLog !== null;
+    .in('target_entity_id', assignmentIds)
+    .gte('created_at', todayStart);
+  return new Set((existingLogs ?? []).map((r) => r.target_entity_id as string));
 }
 
 // ---------------------------------------------------------------------------
@@ -144,7 +157,8 @@ async function logNotificationSkipped(
 }
 
 // ---------------------------------------------------------------------------
-// Per-notification dispatch (dedup → fetch token → send → log)
+// Per-notification dispatch (send → log). Dedup and token lookup are done by
+// the caller in batch (alreadySentTodaySet / getPushTokens).
 // Returns: 'sent' | 'failed' | 'skipped'
 // ---------------------------------------------------------------------------
 async function dispatchNotification(opts: {
@@ -155,15 +169,10 @@ async function dispatchNotification(opts: {
   notifType: string;
   title: string;
   body: string;
+  pushToken: string | null;
 }): Promise<'sent' | 'failed' | 'skipped'> {
-  const { assignmentId, participantId, groupId, juzNumber, notifType, title, body } = opts;
+  const { assignmentId, participantId, groupId, juzNumber, notifType, title, body, pushToken } = opts;
 
-  // Deduplication guard
-  if (await alreadySentToday(assignmentId)) {
-    return 'skipped';
-  }
-
-  const pushToken = await getPushToken(participantId);
   if (!pushToken) {
     console.error(
       `[notification-scheduler] No push token for participant ${participantId} (assignment ${assignmentId})`
@@ -185,6 +194,60 @@ async function dispatchNotification(opts: {
   } else {
     await logNotificationFailed(groupId, assignmentId, notifType, participantId);
     return 'failed';
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Batch dispatch: dedup + token lookup in two queries, then all pushes
+// concurrently. Tallies results into counters.
+// ---------------------------------------------------------------------------
+interface PushJob {
+  assignmentId: string;
+  participantId: string;
+  groupId: string;
+  juzNumber: number;
+  notifType: string;
+  title: string;
+  body: string;
+}
+
+async function dispatchNotificationBatch(
+  jobs: PushJob[],
+  counters: { sent: number; failed: number; skipped: number }
+): Promise<void> {
+  if (jobs.length === 0) return;
+
+  const sentToday = await alreadySentTodaySet(jobs.map((j) => j.assignmentId));
+  const pending = jobs.filter((j) => {
+    if (sentToday.has(j.assignmentId)) {
+      counters.skipped++;
+      return false;
+    }
+    return true;
+  });
+  if (pending.length === 0) return;
+
+  const tokens = await getPushTokens(pending.map((j) => j.participantId));
+
+  const results = await Promise.allSettled(
+    pending.map((j) =>
+      dispatchNotification({ ...j, pushToken: tokens.get(j.participantId) ?? null })
+    )
+  );
+
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i];
+    if (r.status === 'fulfilled') {
+      if (r.value === 'sent') counters.sent++;
+      else if (r.value === 'failed') counters.failed++;
+      else counters.skipped++;
+    } else {
+      console.error(
+        `[notification-scheduler] error dispatching ${pending[i].notifType} for assignment ${pending[i].assignmentId}:`,
+        r.reason
+      );
+      counters.failed++;
+    }
   }
 }
 
@@ -295,6 +358,7 @@ async function processDeadlineReminders(
         ? 'REMINDER_2_DAYS'
         : 'REMINDER_5_DAYS';
 
+    const jobs: PushJob[] = [];
     for (const participant of participants ?? []) {
       const assignments = participant.khatm_juz_assignments as Array<{
         id: string;
@@ -304,27 +368,17 @@ async function processDeadlineReminders(
       const incompleteAssignment = assignments.find((a) => a.status !== 'COMPLETED');
       if (!incompleteAssignment) continue;
 
-      try {
-        const result = await dispatchNotification({
-          assignmentId: incompleteAssignment.id,
-          participantId: participant.id as string,
-          groupId: group_id,
-          juzNumber: 0, // deadline reminder is group-level, no specific juz
-          notifType,
-          title: `Deadline in ${dayLabel}`,
-          body: `Your Juz in "${groupTitle}" is due in ${dayLabel}. Don't forget to complete it!`,
-        });
-        if (result === 'sent') counters.sent++;
-        else if (result === 'failed') counters.failed++;
-        else counters.skipped++;
-      } catch (e) {
-        console.error(
-          `[notification-scheduler] error dispatching deadline reminder for participant ${participant.id}:`,
-          e
-        );
-        counters.failed++;
-      }
+      jobs.push({
+        assignmentId: incompleteAssignment.id,
+        participantId: participant.id as string,
+        groupId: group_id,
+        juzNumber: 0, // deadline reminder is group-level, no specific juz
+        notifType,
+        title: `Deadline in ${dayLabel}`,
+        body: `Your Juz in "${groupTitle}" is due in ${dayLabel}. Don't forget to complete it!`,
+      });
     }
+    await dispatchNotificationBatch(jobs, counters);
 
     // T-21: dispatch email notifications after push loop (separate try/catch — cannot block push)
     try {
@@ -396,28 +450,18 @@ async function processJuzNotStarted(
   }
   const assignments = (data ?? []) as unknown as AssignmentRow[];
 
-  for (const assignment of assignments) {
-    try {
-      const result = await dispatchNotification({
-        assignmentId: assignment.id,
-        participantId: assignment.participant_id,
-        groupId: assignment.group_id,
-        juzNumber: assignment.juz_number,
-        notifType: 'JUZ_NOT_STARTED',
-        title: "You haven't started your Juz yet",
-        body: `Juz ${assignment.juz_number} was assigned 3 days ago and hasn't been started. Start reading today!`,
-      });
-      if (result === 'sent') counters.sent++;
-      else if (result === 'failed') counters.failed++;
-      else counters.skipped++;
-    } catch (e) {
-      console.error(
-        `[notification-scheduler] error dispatching JUZ_NOT_STARTED for assignment ${assignment.id}:`,
-        e
-      );
-      counters.failed++;
-    }
-  }
+  await dispatchNotificationBatch(
+    assignments.map((assignment) => ({
+      assignmentId: assignment.id,
+      participantId: assignment.participant_id,
+      groupId: assignment.group_id,
+      juzNumber: assignment.juz_number,
+      notifType: 'JUZ_NOT_STARTED',
+      title: "You haven't started your Juz yet",
+      body: `Juz ${assignment.juz_number} was assigned 3 days ago and hasn't been started. Start reading today!`,
+    })),
+    counters
+  );
 
   // T-21: dispatch email notifications after push loop (separate try/catch)
   try {
@@ -452,28 +496,18 @@ async function processJuzStalled(
   }
   const assignments = (data ?? []) as unknown as AssignmentRow[];
 
-  for (const assignment of assignments) {
-    try {
-      const result = await dispatchNotification({
-        assignmentId: assignment.id,
-        participantId: assignment.participant_id,
-        groupId: assignment.group_id,
-        juzNumber: assignment.juz_number,
-        notifType: 'JUZ_STALLED',
-        title: 'Your Juz reading has stalled',
-        body: `Juz ${assignment.juz_number} hasn't had any progress in 4 days. Keep going — you're almost there!`,
-      });
-      if (result === 'sent') counters.sent++;
-      else if (result === 'failed') counters.failed++;
-      else counters.skipped++;
-    } catch (e) {
-      console.error(
-        `[notification-scheduler] error dispatching JUZ_STALLED for assignment ${assignment.id}:`,
-        e
-      );
-      counters.failed++;
-    }
-  }
+  await dispatchNotificationBatch(
+    assignments.map((assignment) => ({
+      assignmentId: assignment.id,
+      participantId: assignment.participant_id,
+      groupId: assignment.group_id,
+      juzNumber: assignment.juz_number,
+      notifType: 'JUZ_STALLED',
+      title: 'Your Juz reading has stalled',
+      body: `Juz ${assignment.juz_number} hasn't had any progress in 4 days. Keep going — you're almost there!`,
+    })),
+    counters
+  );
 
   // T-21: dispatch email notifications after push loop (separate try/catch)
   try {

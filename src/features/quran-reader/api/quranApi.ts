@@ -1,8 +1,9 @@
 import type { QuranPageData, TranslationVerse } from '@/features/quran-reader/types';
+import { TOTAL_QURAN_PAGES } from '@/features/quran-reader/types';
 
 export async function fetchQuranPage(pageNumber: number): Promise<QuranPageData> {
-  if (pageNumber < 1 || pageNumber > 604) {
-    throw new RangeError('pageNumber must be between 1 and 604');
+  if (pageNumber < 1 || pageNumber > TOTAL_QURAN_PAGES) {
+    throw new RangeError(`pageNumber must be between 1 and ${TOTAL_QURAN_PAGES}`);
   }
 
   const controller = new AbortController();
@@ -47,8 +48,8 @@ export async function fetchTranslationPage(
   pageNumber: number,
   edition: string = 'en.asad'
 ): Promise<TranslationVerse[]> {
-  if (pageNumber < 1 || pageNumber > 604) {
-    throw new RangeError('pageNumber must be between 1 and 604');
+  if (pageNumber < 1 || pageNumber > TOTAL_QURAN_PAGES) {
+    throw new RangeError(`pageNumber must be between 1 and ${TOTAL_QURAN_PAGES}`);
   }
 
   const controller = new AbortController();
