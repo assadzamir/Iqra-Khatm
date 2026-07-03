@@ -260,11 +260,15 @@ async function processDeadlineReminders(
     const { days_before, group_id, title: groupTitle } = schedule;
 
     // Participants with JOINED status who have at least one incomplete assignment
+    // T-21: also select email, email_notifications_enabled, name for email dispatch
     const { data: participants, error: pErr } = await supabase
       .from('khatm_participants')
       .select(
         `
         id,
+        name,
+        email,
+        email_notifications_enabled,
         khatm_juz_assignments!inner (
           id,
           status
@@ -321,7 +325,55 @@ async function processDeadlineReminders(
         counters.failed++;
       }
     }
+
+    // T-21: dispatch email notifications after push loop (separate try/catch — cannot block push)
+    try {
+      await dispatchEmailNotifications({
+        participants: (participants ?? []).map((p: Record<string, unknown>) => ({
+          participant_id: p.id as string,
+          email: p.email as string | null,
+          name: p.name as string,
+          email_notifications_enabled: p.email_notifications_enabled as boolean,
+        })),
+        event_type: 'DEADLINE_REMINDER',
+        group_name: schedule.title,
+        group_id,
+        extra: { days_before },
+      });
+    } catch (e) {
+      console.error('[notification-scheduler] DEADLINE_REMINDER email dispatch error:', e);
+    }
   }
+}
+
+// ---------------------------------------------------------------------------
+// Shared shape for the stall/not-started scenarios (per-assignment events)
+// ---------------------------------------------------------------------------
+interface AssignmentRow {
+  id: string;
+  participant_id: string;
+  juz_number: number;
+  group_id: string;
+  khatm_participants: {
+    name: string;
+    email: string | null;
+    email_notifications_enabled: boolean;
+  };
+  khatm_groups: { title: string };
+}
+
+// Per-assignment events carry group/juz per recipient — the email function
+// falls back to top-level values only when these are absent.
+function toEmailParticipants(assignments: AssignmentRow[]) {
+  return assignments.map((a) => ({
+    participant_id: a.participant_id,
+    email: a.khatm_participants?.email ?? null,
+    name: a.khatm_participants?.name ?? '',
+    email_notifications_enabled: a.khatm_participants?.email_notifications_enabled ?? false,
+    group_id: a.group_id,
+    group_name: a.khatm_groups?.title ?? '',
+    extra: { juz_number: a.juz_number },
+  }));
 }
 
 // ---------------------------------------------------------------------------
@@ -330,9 +382,10 @@ async function processDeadlineReminders(
 async function processJuzNotStarted(
   counters: { sent: number; failed: number; skipped: number }
 ): Promise<void> {
-  const { data: assignments, error } = await supabase
+  // T-21: also select email fields + group title via joins
+  const { data, error } = await supabase
     .from('khatm_juz_assignments')
-    .select('id, participant_id, juz_number, group_id')
+    .select('id, participant_id, juz_number, group_id, khatm_participants!inner(name, email, email_notifications_enabled), khatm_groups!inner(title)')
     .eq('status', 'ASSIGNED')
     .eq('progress_percent', 0)
     .lt('assigned_at', new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString());
@@ -341,14 +394,15 @@ async function processJuzNotStarted(
     console.error('[notification-scheduler] JUZ_NOT_STARTED query error:', error);
     return;
   }
+  const assignments = (data ?? []) as unknown as AssignmentRow[];
 
-  for (const assignment of assignments ?? []) {
+  for (const assignment of assignments) {
     try {
       const result = await dispatchNotification({
-        assignmentId: assignment.id as string,
-        participantId: assignment.participant_id as string,
-        groupId: assignment.group_id as string,
-        juzNumber: assignment.juz_number as number,
+        assignmentId: assignment.id,
+        participantId: assignment.participant_id,
+        groupId: assignment.group_id,
+        juzNumber: assignment.juz_number,
         notifType: 'JUZ_NOT_STARTED',
         title: "You haven't started your Juz yet",
         body: `Juz ${assignment.juz_number} was assigned 3 days ago and hasn't been started. Start reading today!`,
@@ -364,6 +418,19 @@ async function processJuzNotStarted(
       counters.failed++;
     }
   }
+
+  // T-21: dispatch email notifications after push loop (separate try/catch)
+  try {
+    await dispatchEmailNotifications({
+      participants: toEmailParticipants(assignments),
+      event_type: 'JUZ_NOT_STARTED',
+      group_name: '',
+      group_id: assignments[0]?.group_id ?? '',
+      extra: {},
+    });
+  } catch (e) {
+    console.error('[notification-scheduler] JUZ_NOT_STARTED email dispatch error:', e);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -372,9 +439,10 @@ async function processJuzNotStarted(
 async function processJuzStalled(
   counters: { sent: number; failed: number; skipped: number }
 ): Promise<void> {
-  const { data: assignments, error } = await supabase
+  // T-21: also select email fields + group title via joins
+  const { data, error } = await supabase
     .from('khatm_juz_assignments')
-    .select('id, participant_id, juz_number, group_id')
+    .select('id, participant_id, juz_number, group_id, khatm_participants!inner(name, email, email_notifications_enabled), khatm_groups!inner(title)')
     .eq('status', 'IN_PROGRESS')
     .lt('last_updated_at', new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString());
 
@@ -382,14 +450,15 @@ async function processJuzStalled(
     console.error('[notification-scheduler] JUZ_STALLED query error:', error);
     return;
   }
+  const assignments = (data ?? []) as unknown as AssignmentRow[];
 
-  for (const assignment of assignments ?? []) {
+  for (const assignment of assignments) {
     try {
       const result = await dispatchNotification({
-        assignmentId: assignment.id as string,
-        participantId: assignment.participant_id as string,
-        groupId: assignment.group_id as string,
-        juzNumber: assignment.juz_number as number,
+        assignmentId: assignment.id,
+        participantId: assignment.participant_id,
+        groupId: assignment.group_id,
+        juzNumber: assignment.juz_number,
         notifType: 'JUZ_STALLED',
         title: 'Your Juz reading has stalled',
         body: `Juz ${assignment.juz_number} hasn't had any progress in 4 days. Keep going — you're almost there!`,
@@ -405,12 +474,85 @@ async function processJuzStalled(
       counters.failed++;
     }
   }
+
+  // T-21: dispatch email notifications after push loop (separate try/catch)
+  try {
+    await dispatchEmailNotifications({
+      participants: toEmailParticipants(assignments),
+      event_type: 'JUZ_STALLED',
+      group_name: '',
+      group_id: assignments[0]?.group_id ?? '',
+      extra: {},
+    });
+  } catch (e) {
+    console.error('[notification-scheduler] JUZ_STALLED email dispatch error:', e);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// T-21: Email notification dispatch (additive — MUST NOT block push pipeline)
+// [threat-model] US-11 AC-6: email failures cannot block push pipeline
+// ---------------------------------------------------------------------------
+async function dispatchEmailNotifications(opts: {
+  participants: Array<{
+    participant_id: string;
+    email: string | null;
+    name: string;
+    email_notifications_enabled: boolean;
+    // Per-recipient overrides for per-assignment events
+    group_id?: string;
+    group_name?: string;
+    extra?: Record<string, unknown>;
+  }>;
+  event_type: 'DEADLINE_REMINDER' | 'JUZ_STALLED' | 'JUZ_NOT_STARTED' | 'COMPLETION';
+  group_name: string;
+  group_id: string;
+  extra: Record<string, unknown>;
+}): Promise<void> {
+  const eligible = opts.participants.filter((p) => p.email !== null && p.email !== '');
+  if (eligible.length === 0) return;
+
+  const emailFnUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/email-notifications`;
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+  try {
+    const res = await fetch(emailFnUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify({
+        participants: eligible,
+        event_type: opts.event_type,
+        group_name: opts.group_name,
+        group_id: opts.group_id,
+        extra: opts.extra,
+      }),
+    });
+    if (!res.ok) {
+      console.error('[notification-scheduler] email dispatch status:', res.status);
+    }
+  } catch (e) {
+    // [threat-model] US-11 AC-6: email failures MUST NOT block push pipeline
+    console.error('[notification-scheduler] email dispatch error:', e);
+  }
 }
 
 // ---------------------------------------------------------------------------
 // Entry point
 // ---------------------------------------------------------------------------
-Deno.serve(async (_req: Request) => {
+Deno.serve(async (req: Request) => {
+  // SA-001 fix: authenticate all callers — service-role key only
+  const authHeader = req.headers.get('Authorization');
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!authHeader || authHeader !== `Bearer ${serviceKey}`) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   const counters = { sent: 0, failed: 0, skipped: 0 };
 
   try {
@@ -428,8 +570,9 @@ Deno.serve(async (_req: Request) => {
     );
   } catch (e) {
     console.error('[notification-scheduler] unhandled error:', e);
+    // SA-002 fix: do not expose internal error details in response
     return new Response(
-      JSON.stringify({ error: 'Internal server error', detail: String(e) }),
+      JSON.stringify({ error: 'Internal server error' }),
       { headers: { 'Content-Type': 'application/json' }, status: 500 }
     );
   }

@@ -12,6 +12,7 @@ import {
   useColorScheme,
 } from 'react-native';
 import { BottomSheetView, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { router } from 'expo-router';
 
 // Slider: @react-native-community/slider (Expo SDK 52 compatible)
 // If this import fails at runtime, see fallback TextInput below
@@ -198,6 +199,7 @@ export function JuzBottomSheet({
       endPage: range.endPage,
     });
     onClose();
+    router.push(`/(quran-reader)/${range.startPage}`);
   }, [groupId, juzNumber, myParticipantId, onClose]);
 
   const handleClaimJuz = useCallback(() => {

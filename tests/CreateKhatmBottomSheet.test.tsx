@@ -317,9 +317,7 @@ describe('CreateKhatmBottomSheet', () => {
   // ── Step 5: error state ──────────────────────────────────────────────────
 
   it('displays error message when createKhatm fails', async () => {
-    mockIsError = true;
-
-    const { getByText, getByPlaceholderText, getAllByText, rerender } =
+    const { getByText, getByPlaceholderText, getAllByText, rerender, sheetRef, onCreated } =
       renderSheet();
 
     // Navigate to Step 5
@@ -335,6 +333,11 @@ describe('CreateKhatmBottomSheet', () => {
     await waitFor(() => getByText('Review'));
 
     fireEvent.press(getByText('Create'));
+
+    // isError transitions to true only after mutate is attempted — the
+    // component's error effect fires on that transition, not on a static value
+    mockIsError = true;
+    rerender(<CreateKhatmBottomSheet sheetRef={sheetRef} onCreated={onCreated} />);
 
     await waitFor(() => {
       expect(
