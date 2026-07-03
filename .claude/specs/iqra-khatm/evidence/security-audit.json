@@ -1,0 +1,76 @@
+{
+  "audit_date": "2026-04-08",
+  "mode": "daily",
+  "git_range": "full codebase (no git)",
+  "posture_score": 93,
+  "findings": [
+    {
+      "id": "SA-001",
+      "severity": "HIGH",
+      "confidence": 9,
+      "file": "supabase/functions/notification-scheduler/index.ts",
+      "line": 523,
+      "title": "notification-scheduler edge function lacks authentication",
+      "description": "The Deno.serve entry point accepts any HTTP request without verifying an Authorization header or service-role token. Unlike email-notifications (which checks Bearer service-role key), notification-scheduler processes all incoming requests unconditionally. The function URL is publicly accessible — any external caller could trigger mass notification dispatch (push + email sends).",
+      "recommendation": "Add service-role bearer token verification at the top of the Deno.serve handler, identical to email-notifications/index.ts. Return 401 for unauthorized requests.",
+      "threat_model_ref": null
+    },
+    {
+      "id": "SA-002",
+      "severity": "MEDIUM",
+      "confidence": 8,
+      "file": "supabase/functions/notification-scheduler/index.ts",
+      "line": 542,
+      "title": "Error response exposes internal error details",
+      "description": "The catch block returns `detail: String(e)` in the HTTP response, which can expose internal stack traces, file paths, or other sensitive implementation details. This is compounded by SA-001 since the endpoint has no auth.",
+      "recommendation": "Remove the `detail` field from the error response. Return only `{ \"error\": \"Internal server error\" }`. The full error is already logged via console.error.",
+      "threat_model_ref": null
+    }
+  ],
+  "filtered_findings": [
+    {
+      "id": "SF-001",
+      "severity": "LOW",
+      "confidence": 6,
+      "title": "MMKV storage not encrypted",
+      "description": "react-native-mmkv stores data unencrypted on device filesystem. Filtered: device-level protection is the standard for this data sensitivity class."
+    },
+    {
+      "id": "SF-002",
+      "severity": "LOW",
+      "confidence": 5,
+      "title": "email-notifications request body not schema-validated",
+      "description": "No explicit JSON schema validation on incoming request body fields beyond TypeScript casting. Filtered: function is service-role only (auth check at entry)."
+    },
+    {
+      "id": "SF-003",
+      "severity": "LOW",
+      "confidence": 6,
+      "title": "Deno module loaded from deno.land/x without integrity hash",
+      "description": "djwt imported from deno.land/x/djwt@v3.0.2 without a lockfile integrity check. Filtered: version is pinned; acceptable for current risk level."
+    }
+  ],
+  "threat_model_verification": {
+    "all_criteria_pass": true,
+    "criteria": [
+      { "id": 1, "severity": "CRITICAL", "title": "Sign-out state clearing", "status": "PASS", "location": "src/app/_layout.tsx:51-57" },
+      { "id": 2, "severity": "CRITICAL", "title": "email-unsubscribe JWT iss+aud validation", "status": "PASS", "location": "supabase/functions/email-unsubscribe/index.ts:53-64" },
+      { "id": 3, "severity": "HIGH", "title": "Signup enumeration prevention", "status": "PASS", "location": "src/app/(auth)/signup.tsx:46-48" },
+      { "id": 4, "severity": "HIGH", "title": "useBookmarks user_id verification before replay", "status": "PASS", "location": "src/features/quran-reader/hooks/useBookmarks.ts:69-73" },
+      { "id": 5, "severity": "HIGH", "title": "Quran API 10s AbortController timeout", "status": "PASS", "location": "src/features/quran-reader/api/quranApi.ts:8-9" },
+      { "id": 6, "severity": "HIGH", "title": "Page param validation 1-604", "status": "PASS", "location": "src/app/(quran-reader)/[page].tsx:40-44" },
+      { "id": 7, "severity": "MEDIUM", "title": "Login rate-limit feedback", "status": "PASS", "location": "src/app/(auth)/login.tsx:21-22" },
+      { "id": 8, "severity": "MEDIUM", "title": "Bookmark list limit 200", "status": "PASS", "location": "src/features/quran-reader/hooks/useBookmarks.ts:41" },
+      { "id": 9, "severity": "MEDIUM", "title": "Email failures do not block push pipeline", "status": "PASS", "location": "supabase/functions/notification-scheduler/index.ts (separate try/catch)" },
+      { "id": 10, "severity": "MEDIUM", "title": "Login failures logged non-PII", "status": "PASS", "location": "src/app/(auth)/login.tsx:58" }
+    ]
+  },
+  "summary": {
+    "critical": 0,
+    "high": 1,
+    "medium": 1,
+    "low": 0,
+    "info": 0,
+    "filtered_below_confidence": 3
+  }
+}

@@ -90,6 +90,76 @@
       "severity": "low",
       "enforceable": false,
       "check": null
+    },
+    {
+      "spec_name": "iqra-khatm",
+      "date": "2026-04-08",
+      "category": "implementation",
+      "lesson": "Always exclude Supabase Deno edge function files from tsconfig.json. A root tsconfig with `\"include\": [\"**/*.ts\"]` will pull in supabase/functions/**/*.ts, causing `Cannot find name 'Deno'` errors across every edge function file. Add `\"supabase/functions/**\"` to the `exclude` array at design time, not after the typecheck gate fails.",
+      "source": "retro",
+      "severity": "high",
+      "enforceable": true,
+      "check": "grep_for_old_field_references"
+    },
+    {
+      "spec_name": "iqra-khatm",
+      "date": "2026-04-08",
+      "category": "design",
+      "lesson": "Every Supabase edge function reachable via HTTP must verify a service-role Bearer token at the Deno.serve entry point — especially scheduler or dispatch functions that trigger side effects (push/email). The email-notifications function had this guard from the start; the notification-scheduler did not. Use email-notifications as the canonical auth pattern for all future edge functions.",
+      "source": "retro",
+      "severity": "high",
+      "enforceable": false,
+      "check": null
+    },
+    {
+      "spec_name": "iqra-khatm",
+      "date": "2026-04-08",
+      "category": "implementation",
+      "lesson": "Never include `detail: String(e)` or similar error serialization in HTTP response bodies from edge functions or API routes. Log the full error via console.error for server-side observability, but return only `{ \"error\": \"Internal server error\" }` to callers. Serializing caught exceptions leaks file paths, stack traces, and internal state.",
+      "source": "retro",
+      "severity": "high",
+      "enforceable": false,
+      "check": null
+    },
+    {
+      "spec_name": "iqra-khatm",
+      "date": "2026-04-08",
+      "category": "design",
+      "lesson": "After the threat model injects [threat-model] criteria into requirements.md, scan existing ACs for conflicts with the new security requirements. In this spec, US-1 AC-2 stated 'An account with this email already exists' which directly contradicted the injected enumeration-prevention criterion. The conflict should be resolved at injection time, not discovered by the validator.",
+      "source": "retro",
+      "severity": "medium",
+      "enforceable": false,
+      "check": null
+    },
+    {
+      "spec_name": "iqra-khatm",
+      "date": "2026-04-08",
+      "category": "design",
+      "lesson": "Any task that installs a new package must list `package.json` (and `yarn.lock` or `package-lock.json`) in its Files array. In this spec T-4 listed only `src/lib/supabase.ts` but also added `@react-native-async-storage/async-storage` to package.json. Missing this causes parallel agents to produce lockfile merge conflicts and misleads the file-conflict graph used to build parallel groups.",
+      "source": "retro",
+      "severity": "medium",
+      "enforceable": false,
+      "check": null
+    },
+    {
+      "spec_name": "iqra-khatm",
+      "date": "2026-04-08",
+      "category": "implementation",
+      "lesson": "Deno edge function TypeScript under strict mode requires explicit type annotations on `.map()` callbacks when the source is an untyped Supabase query result. Use `: Record<string, unknown>` or a proper interface annotation — never rely on inference from `.select()` return types which Supabase types as `any` at runtime without codegen.",
+      "source": "retro",
+      "severity": "low",
+      "enforceable": false,
+      "check": null
+    },
+    {
+      "spec_name": "iqra-khatm",
+      "date": "2026-04-08",
+      "category": "implementation",
+      "lesson": "Zustand store tasks (wired: yes) have many implicit import sites rather than a single explicit callsite, making wired status harder to auto-verify during loop execution. When a store task is marked wired:yes, the verification should grep for the store export name across the full src/ tree, not just check for a specific consumer file.",
+      "source": "retro",
+      "severity": "low",
+      "enforceable": false,
+      "check": null
     }
   ]
 }

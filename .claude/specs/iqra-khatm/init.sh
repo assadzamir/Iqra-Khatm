@@ -12,7 +12,7 @@
 # Gates run in order after every implementation iteration.
 # If a gate fails, the debugger agent attempts to fix the issue.
 #
-# gates=("lint:npm run lint" "typecheck:npx tsc --noEmit" "test:npm test")
+gates=("lint:expo lint" "typecheck:npx tsc --noEmit" "test:yarn test")
 # gates=("lint:ruff check ." "typecheck:mypy ." "test:pytest")
 # gates=("lint:golangci-lint run" "test:go test ./...")
 

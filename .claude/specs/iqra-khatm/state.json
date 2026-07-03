@@ -1,31 +1,311 @@
 {
   "version": 1,
-  "spec_name": "{{SPEC_NAME}}",
-  "created_at": "{{ISO_TIMESTAMP}}",
+  "spec_name": "iqra-khatm",
+  "created_at": "2026-04-05T00:00:00.000Z",
   "quick_mode": false,
 
   "integrity": {
-    "requirements_sha256": "",
-    "design_sha256": "",
-    "tasks_sha256": "",
-    "computed_at": ""
+    "requirements_sha256": "70522d3bf22acdba69d8f8f4d0f284e74e1788304d45043be2d0e8d02b5433b6",
+    "design_sha256": "bd9e9cd07126c98a525f5c6b5bc56e3eb2c2483855087a2269983abf91143605",
+    "tasks_sha256": "c5bdfe3e38d57aa306f73d3c636af1d9bea956e7e3bd6a6fa5ea6a24fe718a3d",
+    "computed_at": "2026-04-08T00:00:00.000Z"
   },
 
-  "tasks": {},
+  "tasks": {
+    "T-1": {
+      "status": "completed",
+      "wave": 0,
+      "wired": "n/a",
+      "failures": 0,
+      "files": [
+        "supabase/migrations/005_auth_reader_email.sql"
+      ]
+    },
+    "T-2": {
+      "status": "completed",
+      "wave": 0,
+      "wired": "n/a",
+      "failures": 0,
+      "files": [
+        "src/features/auth/types.ts"
+      ]
+    },
+    "T-3": {
+      "status": "completed",
+      "wave": 0,
+      "wired": "n/a",
+      "failures": 0,
+      "files": [
+        "src/features/quran-reader/types.ts"
+      ]
+    },
+    "T-4": {
+      "status": "completed",
+      "wave": 0,
+      "wired": "n/a",
+      "failures": 0,
+      "files": [
+        "src/lib/supabase.ts",
+        "package.json"
+      ]
+    },
+    "T-6": {
+      "status": "completed",
+      "wave": 1,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "src/features/auth/store.ts"
+      ]
+    },
+    "T-12": {
+      "status": "completed",
+      "wave": 1,
+      "wired": "n/a",
+      "failures": 0,
+      "files": [
+        "src/features/quran-reader/api/quranApi.ts"
+      ]
+    },
+    "T-19": {
+      "status": "completed",
+      "wave": 1,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "supabase/functions/email-notifications/index.ts"
+      ]
+    },
+    "T-20": {
+      "status": "completed",
+      "wave": 1,
+      "wired": "n/a",
+      "failures": 0,
+      "files": [
+        "supabase/functions/email-unsubscribe/index.ts"
+      ]
+    },
+    "T-5": {
+      "status": "completed",
+      "wave": 2,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "src/app/_layout.tsx"
+      ]
+    },
+    "T-13": {
+      "status": "completed",
+      "wave": 2,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "src/features/quran-reader/hooks/useQuranPage.ts",
+        "src/features/quran-reader/hooks/useTranslation.ts",
+        "src/features/quran-reader/hooks/useReaderSettings.ts"
+      ]
+    },
+    "T-15": {
+      "status": "completed",
+      "wave": 2,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "src/features/quran-reader/hooks/useBookmarks.ts"
+      ]
+    },
+    "T-21": {
+      "status": "completed",
+      "wave": 2,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "supabase/functions/notification-scheduler/index.ts"
+      ]
+    },
+    "T-7": {
+      "status": "completed",
+      "wave": 3,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "src/app/(auth)/login.tsx",
+        "src/app/(auth)/_layout.tsx"
+      ]
+    },
+    "T-8": {
+      "status": "completed",
+      "wave": 3,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "src/app/(auth)/signup.tsx"
+      ]
+    },
+    "T-9": {
+      "status": "completed",
+      "wave": 3,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "src/app/(auth)/otp.tsx"
+      ]
+    },
+    "T-10": {
+      "status": "completed",
+      "wave": 3,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "src/app/(auth)/forgot-password.tsx"
+      ]
+    },
+    "T-11": {
+      "status": "completed",
+      "wave": 3,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "src/app/(auth)/onboarding.tsx"
+      ]
+    },
+    "T-14": {
+      "status": "completed",
+      "wave": 3,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "src/features/quran-reader/components/QuranPageRenderer.tsx"
+      ]
+    },
+    "T-17": {
+      "status": "completed",
+      "wave": 3,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "src/features/quran-reader/components/BookmarkSheet.tsx"
+      ]
+    },
+    "T-16": {
+      "status": "completed",
+      "wave": 4,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "src/features/quran-reader/components/ReaderToolbar.tsx",
+        "src/features/quran-reader/components/PageNavigationBar.tsx"
+      ]
+    },
+    "T-22": {
+      "status": "completed",
+      "wave": 4,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "src/app/(auth)/index.tsx",
+        "src/app/(tabs)/_layout.tsx"
+      ]
+    },
+    "T-18": {
+      "status": "completed",
+      "wave": 5,
+      "wired": "yes",
+      "failures": 0,
+      "files": [
+        "src/app/(quran-reader)/[page].tsx"
+      ]
+    },
+    "T-23": {
+      "status": "completed",
+      "wave": 5,
+      "wired": "n/a",
+      "failures": 0,
+      "files": [
+        "tests/e2e/auth-reader-flow.test.ts"
+      ]
+    },
+    "T-24": {
+      "status": "completed",
+      "wave": 6,
+      "wired": "n/a",
+      "failures": 0,
+      "files": [
+        "tests/e2e/reader-flow.test.ts"
+      ]
+    },
+    "T-25": {
+      "status": "completed",
+      "wave": 6,
+      "wired": "n/a",
+      "failures": 0,
+      "files": [
+        "src/app/(auth)/login.tsx",
+        "src/app/(auth)/signup.tsx",
+        "src/app/(auth)/otp.tsx",
+        "src/app/(auth)/forgot-password.tsx",
+        "src/app/(auth)/onboarding.tsx",
+        "src/features/quran-reader/components/ReaderToolbar.tsx",
+        "src/features/quran-reader/components/PageNavigationBar.tsx",
+        "src/features/quran-reader/components/BookmarkSheet.tsx"
+      ]
+    }
+  },
 
-  "waves": [],
+  "waves": [
+    {
+      "wave": 0,
+      "tasks": ["T-1", "T-2", "T-3", "T-4"]
+    },
+    {
+      "wave": 1,
+      "tasks": ["T-6", "T-12", "T-19", "T-20"]
+    },
+    {
+      "wave": 2,
+      "tasks": ["T-5", "T-13", "T-15", "T-21"]
+    },
+    {
+      "wave": 3,
+      "tasks": ["T-7", "T-8", "T-9", "T-10", "T-11", "T-14", "T-17"]
+    },
+    {
+      "wave": 4,
+      "tasks": ["T-16", "T-22"]
+    },
+    {
+      "wave": 5,
+      "tasks": ["T-18", "T-23"]
+    },
+    {
+      "wave": 6,
+      "tasks": ["T-24", "T-25"]
+    }
+  ],
 
   "parallel": {
     "max_parallel_agents": 3,
-    "shared_files": [],
+    "shared_files": [
+      "package.json",
+      "package-lock.json",
+      "yarn.lock",
+      "tsconfig.json",
+      "src/app/_layout.tsx",
+      "src/app/(tabs)/_layout.tsx",
+      "src/app/(auth)/_layout.tsx",
+      "supabase/functions/notification-scheduler/index.ts"
+    ],
     "generated_files": [],
-    "post_merge_commands": []
+    "post_merge_commands": [
+      "yarn install",
+      "npx tsc --noEmit"
+    ]
   },
 
   "execution": {
-    "current_wave": 0,
+    "current_wave": 6,
     "current_batch": [],
-    "iteration": 0,
+    "iteration": 7,
     "total_tokens": 0,
     "budget_cap": null,
     "started_at": null,
@@ -39,33 +319,79 @@
     "model_versions": {},
     "git_sha_start": null,
     "prompt_hashes": [],
-    "referenced_codebase_files": []
+    "referenced_codebase_files": [
+      "src/lib/supabase.ts",
+      "src/lib/mmkv.ts",
+      "src/features/khatm/types.ts",
+      "src/features/khatm/constants.ts",
+      "src/features/khatm/store.ts",
+      "src/features/khatm/hooks/useAutoTracking.ts",
+      "src/app/(quran-reader)/[page].tsx",
+      "src/app/(tabs)/_layout.tsx",
+      "supabase/functions/notification-scheduler/index.ts",
+      "supabase/migrations/004_push_token.sql",
+      "package.json",
+      "tsconfig.json"
+    ]
   },
 
   "quality_gates": {
     "gates": [],
-    "lint_cmd": null,
-    "typecheck_cmd": null,
-    "test_cmd": null,
-    "dev_cmd": null,
+    "lint_cmd": "expo lint",
+    "typecheck_cmd": "npx tsc --noEmit",
+    "test_cmd": "yarn test",
+    "dev_cmd": "expo start",
     "integration_cmd": null,
     "baseline_errors": null,
     "allowed_commands": [],
     "last_regression_pass": null
   },
 
-  "lessons_applied": [],
+  "lessons_applied": [
+    "RLS policies written in migration before client tasks run (Lesson 1)",
+    "Audit log has explicit INSERT policy via khatm_audit_log (Lesson 3)",
+    "Bookmark offline queue uses MMKV, not in-memory (Lesson 4)",
+    "Signup + profile creation is atomic flow via OnboardingScreen (Lesson 5 / Lesson 7)",
+    "QuranReaderPage split from sub-components into separate tasks (Lesson 6)"
+  ],
 
-  "audit_log": [],
+  "audit_log": [
+    { "event": "wave_completed", "wave": 0, "timestamp": "2026-04-08T00:00:00Z", "details": "T-1, T-2, T-3, T-4 completed — migration, types, supabase client" },
+    { "event": "wave_completed", "wave": 1, "timestamp": "2026-04-08T00:01:00Z", "details": "T-6, T-12, T-19, T-20 completed — auth store, quran API, email edge functions" },
+    { "event": "wave_completed", "wave": 2, "timestamp": "2026-04-08T00:05:00Z", "details": "T-5, T-13, T-15, T-21 completed — root layout, hooks, notification scheduler integration" },
+    { "event": "wave_completed", "wave": 3, "timestamp": "2026-04-08T00:09:00Z", "details": "T-7, T-8, T-9, T-10, T-11, T-14, T-17 completed — auth screens, QuranPageRenderer, BookmarkSheet" },
+    { "event": "wave_completed", "wave": 4, "timestamp": "2026-04-08T00:10:00Z", "details": "T-16, T-22 completed — ReaderToolbar, PageNavigationBar, auth route guards" },
+    { "event": "wave_completed", "wave": 5, "timestamp": "2026-04-08T00:14:00Z", "details": "T-18, T-23 completed — QuranReaderPage orchestrator, auth flow tests" },
+    { "event": "wave_completed", "wave": 6, "timestamp": "2026-04-08T00:16:00Z", "details": "T-24, T-25 completed — reader flow tests, dark mode polish" },
+    { "event": "spec_complete", "timestamp": "2026-04-08T00:16:00Z", "details": "25/25 tasks completed across 7 waves" },
+    {
+      "event": "threat_model_complete",
+      "threats_by_stride": {
+        "S": 4,
+        "T": 4,
+        "R": 2,
+        "I": 4,
+        "D": 5,
+        "E": 3
+      },
+      "injected_criteria": 10
+    },
+    {
+      "event": "tasks_generated",
+      "task_count": 25,
+      "wave_count": 7,
+      "generated_at": "2026-04-05T00:00:00.000Z"
+    }
+  ],
 
   "security": {
-    "posture_score": null,
-    "last_audit_date": null,
-    "threat_model_status": "pending",
+    "posture_score": 93,
+    "last_audit_date": "2026-04-08",
+    "threat_model_status": "completed",
     "findings": {
       "critical": 0,
-      "high": 0,
-      "medium": 0
+      "high": 1,
+      "medium": 1
     }
   }
 }
