@@ -19,7 +19,7 @@ const mockVerifyOtp = jest.fn();
 const mockResetPasswordForEmail = jest.fn();
 // user_profiles lookup used by login/otp to route to tabs vs onboarding
 const mockMaybeSingle = jest.fn();
-const mockFrom = jest.fn(() => ({
+const mockFrom = jest.fn((..._args: any[]) => ({
   select: jest.fn(() => ({
     eq: jest.fn(() => ({
       maybeSingle: (...args: any[]) => mockMaybeSingle(...args),

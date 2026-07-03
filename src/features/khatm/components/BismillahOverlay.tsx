@@ -11,7 +11,7 @@ export function BismillahOverlay({ visible, onDismiss }: BismillahOverlayProps) 
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const opacity = useRef(new Animated.Value(0)).current;
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     if (visible) {

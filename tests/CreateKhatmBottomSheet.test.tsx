@@ -95,7 +95,7 @@ import { CreateKhatmBottomSheet } from '../src/features/khatm/components/CreateK
 // ---------------------------------------------------------------------------
 
 function buildSheetRef(): React.RefObject<BottomSheetModal> {
-  return { current: null } as React.RefObject<BottomSheetModal>;
+  return { current: null } as unknown as React.RefObject<BottomSheetModal>;
 }
 
 function renderSheet(onCreated = jest.fn()) {

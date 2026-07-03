@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, type JSX } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useBookmarks } from '@/features/quran-reader/hooks/useBookmarks';
@@ -76,7 +76,7 @@ export function BookmarkSheet({ isVisible, onClose, onNavigateToPage }: Bookmark
         {renderContent() ?? (
           <BottomSheetFlatList
             data={bookmarks}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item: Bookmark) => item.id}
             renderItem={renderItem}
           />
         )}
