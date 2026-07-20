@@ -96,7 +96,7 @@ must become Hikmah-aware. Grep-able list:
 | 3 | **Email branding** | same file — hardcoded `from: 'Iqra Khatm <notifications@iqra-app.com>'`, subject/body copy, unsubscribe page HTML in `email-unsubscribe/index.ts` | Update sender (must match a Resend-verified domain for Hikmah), product name in copy. Note: the release notes mention an `EMAIL_FROM_ADDRESS` env var, but **the code currently hardcodes the from address** — parameterize it while you're in there. |
 | 4 | Route mounting | `src/app/` route groups: `(auth)`, `(tabs)`, `(quran-reader)` | If Hikmah already has auth/tabs, mount `(quran-reader)` + the khatm screens into Hikmah's navigator and drop this repo's `(auth)`/`(tabs)` shells. The reader route only depends on `useAuthStore` (for bookmarks) and `useKhatmStore` (optional reading context) — it works without a khatm context. |
 | 5 | Auth store vs Hikmah auth | `src/app/_layout.tsx` + `src/features/auth/store.ts` | The session listener populates `useAuthStore` (session + `user_profiles` row). If Hikmah has its own auth, adapt the store to read from Hikmah's session source; everything downstream only consumes `useAuthStore`. |
-| 6 | Supabase project | `.env` / `src/lib/supabase.ts` | Point `EXPO_PUBLIC_SUPABASE_URL/ANON_KEY` at Hikmah's project and run migrations 001→005 there (001-004 khatm schema, 005 auth/reader/email — order matters). All 005 changes are additive. |
+| 6 | Backend | `.env` / `src/lib/supabase.ts` + everything in §4 | **Decision made: the Supabase backend gets ported onto `hikkmah-backend`** (api.hikkmah.com). See §4 for the full port plan. The Supabase setup in §5 stays valid only for running the feature standalone during the port. |
 | 7 | Theme/branding in screens | auth screens + reader components use hardcoded palettes (`#0D9488` teal, `KHATM_COLORS`, `THEME_COLORS`) | Swap to Hikmah's design tokens. Warning: the five auth screens each carry a **copy of the palette/styles/email-regex** (known cleanup debt, §5) — consolidate while rebranding or you'll restyle five files. |
 | 8 | Cron schedule | Supabase dashboard / `supabase functions` config | Re-create the daily `notification-scheduler` cron (0 6 * * * UTC) on Hikmah's project, invoked with the service-role key as Bearer token (it 401s anything else). |
 | 9 | Package identity | `package.json` name, EAS project in `eas.json` | Merge per Hikmah's release setup. |
@@ -110,7 +110,74 @@ already includes any of these, dedupe versions rather than duplicating.
 
 ---
 
-## 4. Environments & deployment
+## 4. Backend port plan (decided: port onto hikkmah-backend)
+
+The product decision is that Iqra-Khatm's Supabase backend will **not** be kept
+long-term — all server-side functionality ports onto `hikkmah-backend`
+(`api.hikkmah.com` / `staging-api.hikkmah.com`; request definitions in the
+`api-bruno` repo). This section inventories every Supabase surface the app
+depends on and what the backend must provide in its place. It was written
+without access to the `hikkmah-backend` codebase, so it specifies contracts,
+not implementations.
+
+### 4.1 Server-side inventory
+
+| Supabase surface | What it does today | hikkmah-backend must provide |
+|---|---|---|
+| Postgres schema (migrations 001–005) | 8 tables: `khatm_groups`, `khatm_participants`, `khatm_juz_assignments`, `khatm_progress_updates`, `khatm_reminder_schedules`, `khatm_audit_log`, `user_profiles`, `user_bookmarks` | Equivalent schema + data migration for any existing rows |
+| **Row Level Security policies** | The entire authorization model — per-user/per-group row access enforced in the database | **API-layer authorization on every endpoint.** This is the highest-risk part of the port: the 93/100 security posture and all 10 threat-model criteria assume RLS. Re-run the security review (`.claude/specs/iqra-khatm/evidence/`) against the ported endpoints. |
+| `SECURITY DEFINER` RPCs: `generate_invite_code`, `claim_juz`, `start_new_cycle`, `get_due_reminder_schedules` | Server-side operations; `claim_juz` deliberately derives the participant from the authenticated identity server-side (audit fix SA-003 — the client never supplies its own participant id) | Endpoints that preserve that server-side identity derivation — do not accept participant ids from the client for self-claims |
+| DB triggers | Juz status/timestamp transitions on progress updates, group-completion detection, self-role-change prevention | Backend logic (or triggers in the new schema) with the same semantics |
+| Supabase Auth | Email/password, phone OTP, password reset, session persistence + refresh (AsyncStorage adapter in `src/lib/supabase.ts`) | Hikmah's auth system. This is the largest client-side change — see 4.2 |
+| Supabase Realtime | `postgres_changes` subscription (`useKhatmQueries.ts` ~202–258) — live updates for juz assignments and group status, drives the completion banner | WebSocket/push equivalent, or accept polling (TanStack Query refetch) as a v1 port compromise |
+| `notification-scheduler` edge function | Daily cron (0 6 * * * UTC), service-role-authenticated; push via Expo Push API with batched `(assignment, day)` dedup | A scheduled backend job with the same dedup semantics (currently rows in `khatm_audit_log`) |
+| `email-notifications` edge function | Resend sends with `(participant, event-type, day)` dedup, audit rows, per-recipient payloads | Backend mailer endpoint/job — the Resend integration itself is portable as-is |
+| `email-unsubscribe` edge function | Public GET, verifies HS256 JWT (`_shared/jwt.ts`: `aud='email-unsubscribe'`, 30-day expiry, signed with `SUPABASE_JWT_SECRET`) | Public unsubscribe endpoint; the signing secret becomes a backend-owned secret. Keep signer and verifier in one module, as now. |
+
+### 4.2 Client-side swap
+
+Exactly **12 files** import the Supabase client — the swap surface is known
+and bounded:
+
+- **Auth (7)**: `src/app/_layout.tsx` (session listener + profile fetch),
+  `src/features/auth/store.ts`, and the five `(auth)/` screens
+  (`login`, `signup`, `otp`, `forgot-password`, `onboarding`)
+- **Khatm (4)**: `useKhatmQueries.ts` (incl. the Realtime subscription),
+  `useKhatmMutations.ts` (incl. the three RPC calls),
+  `GroupSettingsBottomSheet.tsx`, `CompletionScreen.tsx`
+- **Reader (1)**: `useBookmarks.ts`
+
+Recommended strategy: keep the TanStack Query hooks, Zustand stores, and all
+components unchanged — replace only the `queryFn`/`mutationFn` bodies and the
+auth listener with calls to a new REST client module. The pattern already
+exists in the codebase: `src/features/quran-reader/api/quranApi.ts` is a
+plain fetch client with timeout/retry that the hooks wrap. Mirror it with a
+`hikmahApi.ts`.
+
+### 4.3 Suggested port order
+
+1. **API contract first** — define the endpoints in `api-bruno` by
+   transcribing the queries/RPCs above, and review them against the RLS
+   policies in migrations 001–005 (each policy becomes an authorization rule).
+2. **Schema + data migration** on hikkmah-backend's database.
+3. **Auth swap** — the auth store isolates this; everything downstream reads
+   `useAuthStore` only.
+4. **Data-layer swap** feature by feature (khatm, then bookmarks/profiles),
+   keeping tests green — the jest suites mock at the module boundary, so they
+   convert cheaply to mocking `hikmahApi`.
+5. **Jobs + email** — scheduler cron, Resend mailer, unsubscribe endpoint.
+6. **Security re-review** — walk the threat model and audit findings against
+   the ported endpoints; RLS-to-API-authz is a full re-check, not a diff.
+
+### 4.4 What the port does *not* touch
+
+The Quran reader's rendering, the alquran.cloud client, MMKV-persisted
+settings, the offline bookmark queue concept, all components/navigation, and
+the email HTML/dedup semantics (minus rebranding per §3).
+
+---
+
+## 5. Environments & deployment (current Supabase setup — interim)
 
 App env (see `.env.example`):
 
@@ -138,7 +205,7 @@ elsewhere.
 
 ---
 
-## 5. Known caveats & deliberate debt (honest list)
+## 6. Known caveats & deliberate debt (honest list)
 
 Product/behavior:
 
@@ -189,7 +256,7 @@ Testing:
 
 ---
 
-## 6. Where to read more
+## 7. Where to read more
 
 | Doc | Contents |
 |---|---|
