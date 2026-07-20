@@ -1,0 +1,37 @@
+meta {
+  name: Replace reminder schedules
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/khatm/groups/:groupId/reminder-schedules
+  body: json
+  auth: bearer
+}
+
+params:path {
+  groupId: uuid
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "reminder_windows": [5, 2, 1]
+  }
+}
+
+docs {
+  Replaces: useUpdateGroupSettings reminder path (soft-deactivate all
+  schedules, insert new active rows).
+
+  Authorization: admin/co-admin (RLS khatm_reminder_schedules_insert/update).
+
+  Semantics: full replace — an empty array disables all reminders. Values are
+  days-before-end-date; the daily notification job matches groups whose
+  end_date is exactly today + days_before. Keep soft-delete (is_active=false)
+  rather than hard delete so audit/history survives.
+}

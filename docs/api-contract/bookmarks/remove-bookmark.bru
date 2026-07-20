@@ -1,0 +1,29 @@
+meta {
+  name: Remove bookmark
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/me/bookmarks/:pageNumber
+  body: none
+  auth: bearer
+}
+
+params:path {
+  pageNumber: 1-604
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Replaces: user_bookmarks delete in useBookmarks (keyed by user + page, not
+  by bookmark id — the offline queue only knows page numbers).
+
+  Authorization: caller's own bookmarks.
+
+  MUST be idempotent (200/204 even if no bookmark exists) for the same
+  offline-replay reason as add-bookmark.
+}

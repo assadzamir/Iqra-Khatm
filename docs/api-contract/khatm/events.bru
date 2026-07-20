@@ -1,0 +1,46 @@
+meta {
+  name: Group events (realtime — transport TBD)
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/khatm/groups/:groupId/events
+  body: none
+  auth: bearer
+}
+
+params:path {
+  groupId: uuid
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Replaces: the Supabase Realtime postgres_changes subscription in
+  useKhatmQueries.useKhatmRealtime (src ~lines 202-258). Transport is Zia's
+  call — this file documents what the client consumes today.
+
+  The client needs, per group, while the dashboard is open:
+  1. "something changed on khatm_juz_assignments for this group"
+     → it invalidates and refetches the dashboard (no payload needed beyond
+       the signal itself)
+  2. "group status became COMPLETED"
+     → it navigates to the celebration screen
+  3. connection state (SUBSCRIBED vs error/timeout)
+     → drives a "Reconnecting…" banner
+
+  Proposal: SSE on this endpoint emitting
+    event: assignments-changed   data: {}
+    event: group-completed       data: { "group_id": "uuid" }
+
+  Accepted v1 fallback: no realtime endpoint at all — the client's TanStack
+  Query staleTime is already 10s; switching the dashboard to
+  refetchInterval polling degrades gracefully. If polling is chosen, the
+  reconnect banner and instant completion navigation are lost; completion can
+  be detected from the polled group.status instead.
+
+  Authorization: members only.
+}

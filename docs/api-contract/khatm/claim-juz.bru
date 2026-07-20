@@ -1,0 +1,39 @@
+meta {
+  name: Claim juz (self)
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/khatm/groups/:groupId/juz/:juzNumber/claim
+  body: none
+  auth: bearer
+}
+
+params:path {
+  groupId: uuid
+  juzNumber: 1-30
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Replaces: claim_juz RPC (security-audit fix SA-003).
+
+  Authorization: JOINED member of the group; group assignment_mode must be
+  PARTICIPANT.
+
+  CRITICAL: the claiming participant is derived from the authenticated user +
+  group server-side. There is deliberately NO participant_id in this request
+  — accepting one would let a member claim on someone else's behalf
+  (the exact bug SA-003 fixed).
+
+  Responses:
+  - 201 assignment object (status ASSIGNED, progress 0)
+  - 409 "This Juz already has the maximum number of assignees." / already
+    claimed by caller
+
+  Audit: JUZ_ASSIGNED (self-claim).
+}

@@ -1,0 +1,40 @@
+meta {
+  name: Email unsubscribe (public)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/khatm/email/unsubscribe?token={{unsubscribeToken}}
+  body: none
+  auth: none
+}
+
+params:query {
+  token: signed JWT from the email link
+}
+
+docs {
+  Replaces: the email-unsubscribe edge function. PUBLIC — no session; the
+  token is the authorization. Response is a small HTML page (opened from an
+  email client), not JSON.
+
+  Token contract (currently supabase/functions/_shared/jwt.ts — signer and
+  verifier live in ONE module; keep that in the port):
+  - HS256, backend-owned secret
+  - claims: sub = participant_id, iss = backend origin,
+    aud = "email-unsubscribe", exp = 30 days
+  - ALL failures (bad signature, expired, wrong iss/aud, missing sub) return
+    the SAME "link expired" page — no oracle distinguishing why.
+
+  Effect: sets email_notifications_enabled = false on that participant row.
+
+  KNOWN PRODUCT CAVEAT (decide during port): the flag is per group-membership
+  but the confirmation page implies a global unsubscribe — a user in several
+  groups keeps receiving email from the others. If Hikmah wants global
+  semantics, move the preference to the user profile and update the token to
+  carry the user id. See HIKMAH-INTEGRATION.md §6.1.
+
+  DB update failures still return the success page to the user (the link was
+  valid; the failure is internal) but must be logged via Pino.
+}

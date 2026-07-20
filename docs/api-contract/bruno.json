@@ -1,0 +1,6 @@
+{
+  "version": "1",
+  "name": "hikmah-khatm-api-proposal",
+  "type": "collection",
+  "ignore": ["node_modules", ".git"]
+}

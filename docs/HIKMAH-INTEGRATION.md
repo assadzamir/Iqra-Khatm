@@ -156,9 +156,12 @@ plain fetch client with timeout/retry that the hooks wrap. Mirror it with a
 
 ### 4.3 Suggested port order
 
-1. **API contract first** — define the endpoints in `api-bruno` by
-   transcribing the queries/RPCs above, and review them against the RLS
-   policies in migrations 001–005 (each policy becomes an authorization rule).
+1. **API contract first** — a full draft already exists in
+   [`docs/api-contract/`](api-contract/README.md): a valid Bruno collection
+   with every endpoint transcribed from the client's queries/RPCs and the
+   RLS policies, each with its authorization rule. It is a **proposal
+   pending review by the backend owner (Zia)**; once approved it moves into
+   `api-bruno` as a copy-paste PR.
 2. **Schema + data migration** on hikkmah-backend's database.
 3. **Auth swap** — the auth store isolates this; everything downstream reads
    `useAuthStore` only.

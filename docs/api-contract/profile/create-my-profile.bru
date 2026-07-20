@@ -1,0 +1,36 @@
+meta {
+  name: Create my profile (onboarding)
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/me/profile
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "display_name": "Zamir"
+  }
+}
+
+docs {
+  Replaces: user_profiles insert in src/app/(auth)/onboarding.tsx.
+
+  Authorization: caller's own profile only (RLS insert/update_own —
+  auth.uid() = id).
+
+  Validation: display_name 2-50 characters after trim (DB CHECK constraint
+  char_length >= 2; client enforces the same range).
+
+  PUT is idempotent create-or-update: onboarding creates, future profile
+  editing reuses it.
+
+  Response 200/201: the profile object.
+}

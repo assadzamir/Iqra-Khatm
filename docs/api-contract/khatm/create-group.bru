@@ -1,0 +1,49 @@
+meta {
+  name: Create khatm group
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/khatm/groups
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "title": "Ramadan Khatm",
+    "intention": "For our community",
+    "occasion_type": "RAMADAN",
+    "dedicated_to_name": null,
+    "dedicated_to_relationship": null,
+    "start_date": "2026-08-01",
+    "end_date": "2026-08-30",
+    "timezone": "America/New_York",
+    "language": "en",
+    "assignment_mode": "ADMIN | PARTICIPANT",
+    "max_per_juz": 1,
+    "allow_juz_switch": false,
+    "reminder_windows": [5, 2, 1]
+  }
+}
+
+docs {
+  Replaces: useCreateKhatm (generate_invite_code RPC + khatm_groups insert +
+  creator ADMIN participant insert + reminder schedule inserts — one
+  transaction server-side, which the Supabase version could not guarantee).
+
+  Authorization: any authenticated user.
+
+  Server-side behavior:
+  - Generates the unique invite code (client never supplies it).
+  - Creates the creator's participant row: role ADMIN, status JOINED,
+    email from the authenticated account (feeds email notifications).
+  - status ACTIVE, khatm_cycle 1.
+
+  Response 201: the group object including "invite_code".
+}

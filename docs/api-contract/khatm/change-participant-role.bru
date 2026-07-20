@@ -1,0 +1,40 @@
+meta {
+  name: Change participant role
+  type: http
+  seq: 12
+}
+
+patch {
+  url: {{baseUrl}}/khatm/groups/:groupId/participants/:participantId/role
+  body: json
+  auth: bearer
+}
+
+params:path {
+  groupId: uuid
+  participantId: uuid
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "new_role": "CO_ADMIN | PARTICIPANT",
+    "keep_records": true
+  }
+}
+
+docs {
+  Replaces: useAssignRole.
+
+  Authorization: admin only. A DB trigger currently prevents participants
+  from changing their OWN role (self-promotion) — the endpoint must reject
+  participantId == caller's participant with 403 regardless of role.
+
+  keep_records: when demoting/removing, whether the participant's assignment
+  history is retained (current client behavior default true).
+
+  Audit: ROLE_CHANGED with old/new values.
+}

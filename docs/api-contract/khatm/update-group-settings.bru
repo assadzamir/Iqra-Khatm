@@ -1,0 +1,38 @@
+meta {
+  name: Update group settings
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/khatm/groups/:groupId
+  body: json
+  auth: bearer
+}
+
+params:path {
+  groupId: uuid
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "assignment_mode": "PARTICIPANT",
+    "max_per_juz": 2,
+    "allow_juz_switch": true
+  }
+}
+
+docs {
+  Replaces: useUpdateGroupSettings (group-field updates path). All fields
+  optional; only provided fields change.
+
+  Authorization: admin only (RLS khatm_groups_update = is_admin).
+
+  Audit: one GROUP_SETTINGS_UPDATED row per changed field, actor = caller's
+  participant (derived server-side — the Supabase client sent
+  actor_participant_id itself; the port must not accept it from the body).
+}

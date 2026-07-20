@@ -1,0 +1,31 @@
+meta {
+  name: Regenerate invite code
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/khatm/groups/:groupId/invite-code
+  body: none
+  auth: bearer
+}
+
+params:path {
+  groupId: uuid
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Replaces: useUpdateGroupSettings regenerate_invite path
+  (generate_invite_code RPC + group update).
+
+  Authorization: admin only.
+
+  Response 200: { "invite_code": "NEW123" } — old code stops working
+  immediately.
+
+  Audit: INVITE_CODE_REGENERATED.
+}

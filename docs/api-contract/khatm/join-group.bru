@@ -1,0 +1,38 @@
+meta {
+  name: Join group by invite code
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/khatm/groups/join
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "invite_code": "ABC123",
+    "name": "Display name shown to the group"
+  }
+}
+
+docs {
+  Replaces: useJoinKhatm (invite-code lookup + membership check + participant
+  insert + MEMBER_JOINED audit row).
+
+  Authorization: any authenticated user with a valid invite code. Codes are
+  uppercase-normalized server-side. The participant row's email comes from
+  the authenticated account, never the request body.
+
+  Responses:
+  - 200 { "group_id": "uuid", "already_member": true }  — idempotent re-join
+  - 201 { "group_id": "uuid" }                           — joined
+  - 404 invalid code (uniform message; do not reveal whether code ever existed)
+
+  Audit: MEMBER_JOINED.
+}

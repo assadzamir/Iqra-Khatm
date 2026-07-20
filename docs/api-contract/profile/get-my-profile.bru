@@ -1,0 +1,29 @@
+meta {
+  name: Get my profile
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/me/profile
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Replaces: user_profiles select in src/app/_layout.tsx (session bootstrap)
+  and the login/otp post-auth routing check.
+
+  Authorization: caller's own profile only (RLS user_profiles_select_own).
+
+  Responses:
+  - 200 { "id": "uuid", "display_name": "string",
+          "created_at": "...", "updated_at": "..." }
+  - 404 — profile not created yet. The client routes 404 → onboarding screen
+    and 200 → main app; this two-state contract is load-bearing for the auth
+    flow.
+}

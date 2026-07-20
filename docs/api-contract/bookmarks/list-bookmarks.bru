@@ -1,0 +1,26 @@
+meta {
+  name: List my bookmarks
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/me/bookmarks
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Replaces: user_bookmarks select in useBookmarks (ordered created_at desc,
+  limit 200 — the cap is a threat-model requirement against unbounded
+  payloads; keep it server-side).
+
+  Authorization: caller's own bookmarks only.
+
+  Response 200:
+  [ { "id": "uuid", "page_number": 1-604, "created_at": "..." } ]
+}

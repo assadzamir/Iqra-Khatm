@@ -1,0 +1,42 @@
+meta {
+  name: Get group dashboard
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/khatm/groups/:groupId
+  body: none
+  auth: bearer
+}
+
+params:path {
+  groupId: uuid
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Replaces: useKhatmScreen (single nested Supabase select: group +
+  participants + assignments; the client derives the 30 juz tiles itself and
+  can keep doing so — this endpoint returns the raw shape).
+
+  Authorization: members only (403/404 for non-members).
+
+  Response 200:
+  {
+    "group": { ...khatm_groups row incl. invite_code, assignment_mode,
+               max_per_juz, allow_juz_switch, status, khatm_cycle },
+    "participants": [ { "id", "user_id", "name", "role", "status",
+                        "email_notifications_enabled", "joined_at" } ],
+    "assignments": [ { "id", "participant_id", "juz_number", "status",
+                       "progress_percent", "assigned_at", "started_at",
+                       "completed_at", "last_updated_at" } ]
+  }
+
+  Note: participants' contact details (email/phone) beyond what the client
+  renders should be omitted for non-admin callers — RLS exposed full rows to
+  members; the port is the chance to narrow that.
+}

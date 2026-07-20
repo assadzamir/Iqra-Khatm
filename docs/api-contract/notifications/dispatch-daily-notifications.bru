@@ -1,0 +1,50 @@
+meta {
+  name: Daily notification dispatch (internal job)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/internal/khatm/notifications/dispatch
+  body: none
+  auth: none
+}
+
+docs {
+  Replaces: the notification-scheduler edge function (daily cron 0 6 * * *
+  UTC) + email-notifications edge function. Whether this stays an HTTP
+  endpoint or becomes a plain scheduled job inside hikkmah-backend is Zia's
+  call — the semantics below are the contract either way.
+
+  Auth: NOT a user endpoint. Internal-only (service token / network policy);
+  the current function 401s anything without the service-role key.
+
+  Three scenarios, evaluated daily:
+  1. DEADLINE_REMINDER — per active reminder schedule where group end_date ==
+     today + days_before; targets JOINED participants with >= 1 incomplete
+     assignment.
+  2. JUZ_NOT_STARTED — assignments status ASSIGNED, progress 0, assigned > 3
+     days ago.
+  3. JUZ_STALLED — assignments status IN_PROGRESS, no update > 4 days.
+
+  Channels per recipient: push (Expo Push API today) and email (Resend).
+  Email failures must never block push (threat-model US-11 AC-6).
+
+  Dedup (must survive the port exactly):
+  - push:  one per (assignment_id, day), recorded as NOTIFICATION_SENT
+  - email: one per (participant_id, event_type, day), recorded as EMAIL_SENT
+  Both are currently rows in khatm_audit_log; group_id is NOT NULL there.
+
+  Per-recipient email payloads carry that recipient's group name and juz
+  number (do not batch across groups with shared fields — that bug produced
+  "Time to start Juz undefined" emails and was fixed in commit 4b6cf5e).
+
+  Emails: sender must be a Resend-verified Hikmah address; body deep-link
+  scheme must be Hikmah's; each email carries the unsubscribe link (see
+  email-unsubscribe.bru). Skip recipients with email_notifications_enabled
+  false or no email on file.
+
+  Implementation notes: use src/utils/logger.ts (Pino) — the current
+  functions log dispatch failures per recipient without exposing secrets;
+  responses must not leak internal error details (audit fix SA-002).
+}

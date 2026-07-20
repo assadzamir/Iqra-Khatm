@@ -1,0 +1,32 @@
+meta {
+  name: Start new khatm cycle
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/khatm/groups/:groupId/cycles
+  body: none
+  auth: bearer
+}
+
+params:path {
+  groupId: uuid
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Replaces: start_new_cycle RPC (security-audit fix SA-007).
+
+  Authorization: admin of the SOURCE group only, and the source group must
+  have status COMPLETED. The new group's admin is the CALLER — the RPC
+  deliberately never copies admin_user_id from the source row; preserve that.
+
+  Response 201: the new group object (khatm_cycle = source + 1, fresh invite
+  code, participants copied per current RPC semantics).
+
+  409 if source group is not COMPLETED.
+}

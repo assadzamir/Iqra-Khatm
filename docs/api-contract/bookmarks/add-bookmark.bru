@@ -1,0 +1,33 @@
+meta {
+  name: Add bookmark
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/me/bookmarks/:pageNumber
+  body: none
+  auth: bearer
+}
+
+params:path {
+  pageNumber: 1-604
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Replaces: user_bookmarks insert in useBookmarks (toggle-on path and the
+  offline-queue replay).
+
+  Authorization: caller's own bookmarks. Validation: page 1-604 (DB CHECK).
+
+  MUST be idempotent (200 if the bookmark already exists, not an error):
+  the client's offline queue replays queued inserts after reconnect and
+  treats duplicate-insert as success (currently Postgres 23505 → "already
+  applied"). A non-idempotent endpoint would wedge the replay loop.
+
+  Response 200/201: the bookmark object.
+}

@@ -1,0 +1,51 @@
+meta {
+  name: Record juz progress
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/khatm/assignments/:assignmentId/progress
+  body: json
+  auth: bearer
+}
+
+params:path {
+  assignmentId: uuid
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "progress_percent": 60,
+    "previous_percent": 50,
+    "source": "IN_APP | ADMIN_OVERRIDE | AUTO_TRACKING",
+    "note": null
+  }
+}
+
+docs {
+  Replaces: useUpdateProgress (khatm_progress_updates ledger insert +
+  khatm_juz_assignments.progress_percent update; DB triggers currently derive
+  started_at / completed_at / status transitions — that logic moves into this
+  endpoint or equivalent triggers).
+
+  Authorization (from RLS khatm_progress_updates_insert):
+  - the assignment's own participant may record IN_APP or AUTO_TRACKING
+  - admin/co-admin of the group may record ADMIN_OVERRIDE for any assignment
+  - anyone else: 403
+
+  AUTO_TRACKING is sent by the Quran reader while reading inside the
+  assignment's page range — same authorization as IN_APP, only the source
+  label differs (it renders as "auto-tracked" in history).
+
+  Status transitions to preserve: 0→>0 sets IN_PROGRESS + started_at;
+  reaching 100 sets COMPLETED + completed_at; group completion is detected
+  when all 30 juz are COMPLETED (currently a DB trigger) and must emit the
+  group-completed event (see events.bru).
+
+  Response 200: updated assignment object.
+}

@@ -1,0 +1,36 @@
+meta {
+  name: List my khatm groups
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/khatm/groups
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  Replaces: useKhatmGroups (client currently does 1 + 2N Supabase queries per
+  group for counts — the backend should return the counts directly).
+
+  Authorization: returns only groups where the caller is a JOINED participant.
+
+  Response 200:
+  [
+    {
+      "group_id": "uuid",
+      "title": "string",
+      "role": "ADMIN | CO_ADMIN | PARTICIPANT",
+      "completed_count": 0,       // juz assignments with status COMPLETED
+      "member_count": 0,          // JOINED participants
+      "start_date": "YYYY-MM-DD",
+      "end_date": "YYYY-MM-DD",
+      "status": "ACTIVE | COMPLETED | ARCHIVED"
+    }
+  ]
+}

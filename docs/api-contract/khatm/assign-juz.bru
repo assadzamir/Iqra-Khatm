@@ -1,0 +1,44 @@
+meta {
+  name: Assign juz to participant (admin)
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/khatm/groups/:groupId/assignments
+  body: json
+  auth: bearer
+}
+
+params:path {
+  groupId: uuid
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "participant_id": "uuid — the assignee (NOT the caller)",
+    "juz_number": 5,
+    "notify": true
+  }
+}
+
+docs {
+  Replaces: useAssignJuz (assignment insert + JUZ_ASSIGNED audit row).
+
+  Authorization: admin/co-admin (RLS khatm_juz_assignments_insert).
+  participant_id here is legitimate input — it names the assignee, not the
+  caller. assigned_by is derived from the caller server-side.
+
+  Server-side: status ASSIGNED, progress_percent 0. Enforce max_per_juz.
+
+  Responses:
+  - 201 assignment object
+  - 409 "This Juz already has the maximum number of assignees."
+    (client branches on this — currently Postgres 23505 / max_per_juz errors)
+
+  Audit: JUZ_ASSIGNED. If notify=true, queue the assignment notification.
+}
