@@ -1,6 +1,9 @@
 # Proposed API contract: Khatm feature → hikkmah-backend
 
 **Status: PROPOSAL — not yet reviewed by the backend owner (Zia).**
+**Backend owner: start at [`../ZIA-HANDOFF.md`](../ZIA-HANDOFF.md)** — it has
+the review procedure, the three open decisions with defaults, and the
+promotion steps. This README covers the collection itself.
 This folder lives in the Iqra-Khatm repo on purpose: it is a reviewable
 artifact, not a change to the shared `api-bruno` collection. Once approved,
 moving it into `api-bruno` is a copy-paste PR (the folder is a valid Bruno
