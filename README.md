@@ -86,6 +86,8 @@ tests/                    component + e2e suites (jest-expo)
 
 - **[docs/HIKMAH-INTEGRATION.md](docs/HIKMAH-INTEGRATION.md)** — engineer
   handoff: architecture, data model, integration plan, known caveats. Start here.
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — setup, quality gates (CI runs
+  typecheck + tests on every PR), conventions, secrets policy
 - `.claude/specs/iqra-khatm/requirements.md` / `design.md` — full spec (EARS
   acceptance criteria, architecture decisions)
 - `.claude/specs/iqra-khatm/release.md` — v1.0.0 release notes, deployment
